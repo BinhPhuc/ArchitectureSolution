@@ -11,5 +11,9 @@ spring:
     password: rootpassword
 
   jpa:
-    hibernate:
-      ddl-auto: update
+  hibernate:
+    ddl-auto: update
+
+jwt:
+  expiration:
+  secretKey:
