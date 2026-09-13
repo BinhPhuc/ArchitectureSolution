@@ -1,8 +1,8 @@
 package com.architecture.solution.controller;
 
 import com.architecture.solution.dto.common.ApiResponse;
-import com.architecture.solution.dto.request.UserLoginRequest;
-import com.architecture.solution.dto.request.UserRegisterRequest;
+import com.architecture.solution.dto.request.LoginRequest;
+import com.architecture.solution.dto.request.RegisterRequest;
 import com.architecture.solution.service.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,18 +28,18 @@ public class AuthController {
 
     @Operation(summary = "Register a new user", description = "Register a new user with username and password")
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody UserRegisterRequest userRegisterRequest) {
-        log.info("Registering user: {}", userRegisterRequest.getUsername());
-        userService.register(userRegisterRequest);
+    public ResponseEntity<ApiResponse<String>> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        log.info("Registering user: {}", registerRequest.getUsername());
+        userService.register(registerRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(
                 null, "User registered successfully"));
     }
 
     @Operation(summary = "Login user", description = "Login with username and password")
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<String>> login(@Valid @RequestBody UserLoginRequest userLoginRequest) {
-        log.info("Logging in user: {}", userLoginRequest.getUsername());
-        Optional<String> token = userService.login(userLoginRequest);
+    public ResponseEntity<ApiResponse<String>> login(@Valid @RequestBody LoginRequest loginRequest) {
+        log.info("Logging in user: {}", loginRequest.getUsername());
+        Optional<String> token = userService.login(loginRequest);
         if (token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.success(
                     null, "Invalid username or password"));

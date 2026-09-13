@@ -2,8 +2,8 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.util.JwtUtil;
-import com.architecture.solution.dto.request.UserLoginRequest;
-import com.architecture.solution.dto.request.UserRegisterRequest;
+import com.architecture.solution.dto.request.LoginRequest;
+import com.architecture.solution.dto.request.RegisterRequest;
 import com.architecture.solution.entity.User;
 import com.architecture.solution.exception.InvalidArgumentException;
 import com.architecture.solution.exception.ResourceExistsException;
@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -28,35 +29,33 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void register(UserRegisterRequest userRegisterRequest) {
-        if (userRepository.existsByUsername(userRegisterRequest.getUsername())) {
-            throw new ResourceExistsException("User with username " + userRegisterRequest.getUsername() + " already exists");
-        }
-        String password = userRegisterRequest.getPassword();
-        String retypePassword = userRegisterRequest.getRetypePassword();
+    @Transactional
+    public void register(RegisterRequest registerRequest) {
+        String password = registerRequest.getPassword();
+        String retypePassword = registerRequest.getRetypePassword();
         if (!password.equals(retypePassword)) {
             throw new InvalidArgumentException("Passwords do not match");
         }
+        if (userRepository.existsByUsername(registerRequest.getUsername())) {
+            throw new ResourceExistsException("User with username " + registerRequest.getUsername() + " already exists");
+        }
         String encodedPassword = passwordEncoder.encode(password);
         User user = User.builder()
-                .username(userRegisterRequest.getUsername())
+                .username(registerRequest.getUsername())
                 .password(encodedPassword)
                 .build();
         userRepository.save(user);
     }
 
+    // TODO: return LoginResponse that has both accessToken & refreshToken
     @Override
-    public Optional<String> login(UserLoginRequest userLoginRequest) {
-        User user = userRepository.findByUsername(userLoginRequest.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "User not found with username: " + userLoginRequest.getUsername()));
-        if (!passwordEncoder.matches(userLoginRequest.getPassword(), user.getPassword())) {
-            throw new InvalidArgumentException("Invalid username or password");
-        }
+    public Optional<String> login(LoginRequest loginRequest) {
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        userLoginRequest.getUsername(),
-                        userLoginRequest.getPassword()
+                        loginRequest.getUsername(),
+                        loginRequest.getPassword()
                 )
         );
         String token = jwtUtil.generateToken(user);

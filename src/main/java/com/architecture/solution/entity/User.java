@@ -1,5 +1,6 @@
 package com.architecture.solution.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -24,6 +25,7 @@ public class User extends BaseEntity implements UserDetails {
     @Column(unique = true)
     private String username;
 
+    @JsonIgnore
     private String password;
 
     @Override
@@ -48,6 +50,6 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return UserDetails.super.isEnabled();
+        return !Boolean.TRUE.equals(getIsDeleted());
     }
 }
