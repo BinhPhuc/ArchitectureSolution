@@ -5,11 +5,5 @@ spring:
   application:
     name: architecture-solution
 
-  datasource:
-    url: jdbc:mysql://localhost:3306/hire_me
-    username: root
-    password: rootpassword
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
+  profiles:
+    active: dev
