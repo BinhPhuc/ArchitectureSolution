@@ -135,3 +135,7 @@ ALTER TABLE `job_applications` ADD FOREIGN KEY (`candidate_id`) REFERENCES `cand
 ALTER TABLE `job_categories` ADD FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`);
 
 ALTER TABLE `job_categories` ADD FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+
+ALTER TABLE `users` ADD COLUMN `refresh_token` varchar(255) UNIQUE;
+
+ALTER TABLE `users` ADD COLUMN `refresh_token_expiry` timestamp;

@@ -1,5 +1,6 @@
 package com.architecture.solution.filter;
 
+import com.architecture.solution.enums.TokenType;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.util.JwtUtil;
 import com.architecture.solution.entity.User;
@@ -34,6 +35,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
         final String token = authHeader.substring(7);
+        final String tokenType = jwtUtil.extractType(token);
+        if (!TokenType.ACCESS.name().equals(tokenType)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         final String username = jwtUtil.extractUsername(token);
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             User user = userRepository.findByUsername(username)

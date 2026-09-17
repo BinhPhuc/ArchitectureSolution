@@ -1,5 +1,9 @@
 package com.architecture.solution.service.impl;
 
+import com.architecture.solution.dto.request.RefreshTokenRequest;
+import com.architecture.solution.dto.response.LoginResponse;
+import com.architecture.solution.dto.response.TokenResponse;
+import com.architecture.solution.enums.TokenType;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.util.JwtUtil;
 import com.architecture.solution.dto.request.LoginRequest;
@@ -17,7 +21,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.time.Instant;
 
 @Service
 @Slf4j
@@ -39,17 +43,21 @@ public class AuthServiceImpl implements AuthService {
         if (userRepository.existsByUsername(registerRequest.getUsername())) {
             throw new ResourceExistsException("User with username " + registerRequest.getUsername() + " already exists");
         }
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+            throw new ResourceExistsException("User with email " + registerRequest.getEmail() + " already exists");
+        }
         String encodedPassword = passwordEncoder.encode(password);
         User user = User.builder()
                 .username(registerRequest.getUsername())
                 .passwordHash(encodedPassword)
+                .email(registerRequest.getEmail())
+                .displayedName(registerRequest.getDisplayedName())
                 .build();
         userRepository.save(user);
     }
 
-    // TODO: return LoginResponse that has both accessToken & refreshToken
     @Override
-    public Optional<String> login(LoginRequest loginRequest) {
+    public LoginResponse login(LoginRequest loginRequest) {
         User user = userRepository.findByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         authenticationManager.authenticate(
@@ -58,7 +66,42 @@ public class AuthServiceImpl implements AuthService {
                         loginRequest.getPassword()
                 )
         );
-        String token = jwtUtil.generateToken(user);
-        return Optional.of(token);
+
+        String accessToken = jwtUtil.generateAccessToken(user);
+        String refreshToken = jwtUtil.generateRefreshToken(user, null);
+        Instant refreshTokenExpiry = jwtUtil.extractExpiration(refreshToken).toInstant();
+
+        user.setRefreshToken(refreshToken);
+        user.setRefreshTokenExpiry(refreshTokenExpiry);
+        userRepository.save(user);
+
+        return LoginResponse.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .build();
+    }
+
+    @Override
+    public TokenResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
+        String refreshToken = refreshTokenRequest.getRefreshToken();
+        if (refreshToken == null || refreshToken.isEmpty()) {
+            throw new InvalidArgumentException("Refresh token is required");
+        }
+        if (!TokenType.REFRESH.name().equals(jwtUtil.extractType(refreshToken))) {
+            throw new InvalidArgumentException("Invalid token type");
+        }
+        User user = userRepository.findByRefreshToken(refreshToken)
+                .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
+        if (!jwtUtil.validateToken(refreshToken, user)) {
+            throw new InvalidArgumentException("Invalid refresh token");
+        }
+        String newAccessToken = jwtUtil.generateAccessToken(user);
+        String newRefreshToken = jwtUtil.generateRefreshToken(user, user.getRefreshTokenExpiry());
+        user.setRefreshToken(newRefreshToken);
+        userRepository.save(user);
+        return TokenResponse.builder()
+                .accessToken(newAccessToken)
+                .refreshToken(newRefreshToken)
+                .build();
     }
 }

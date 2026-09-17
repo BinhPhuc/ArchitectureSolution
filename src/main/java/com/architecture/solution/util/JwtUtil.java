@@ -1,6 +1,7 @@
 package com.architecture.solution.util;
 
 import com.architecture.solution.entity.User;
+import com.architecture.solution.enums.TokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -11,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,18 +20,33 @@ import java.util.function.Function;
 
 @Component
 public class JwtUtil {
-    @Value("${jwt.expiration}")
-    private Long expiration;
-
     @Value("${jwt.secretKey}")
     private String secretKey;
 
-    public String generateToken(User user) {
-        Map<String, Object> claims = new HashMap<>();
+    private static final long ACCESS_TOKEN_VALIDITY = 5 * 60 * 1000; // 5 minutes
+    private static final long REFRESH_TOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+    public String generateAccessToken(User user) {
+        Map<String, String> claims = new HashMap<>();
+        claims.put("type", TokenType.ACCESS.toString());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getUsername())
-                .setExpiration(new Date(System.currentTimeMillis() + expiration * 1000L))
+                .setExpiration(new Date(System.currentTimeMillis() + ACCESS_TOKEN_VALIDITY))
+                .signWith(getSignInKey(), SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateRefreshToken(User user, Instant refreshTokenExpirationDate) {
+        Map<String, String> claims = new HashMap<>();
+        claims.put("type", TokenType.REFRESH.toString());
+        return Jwts.builder()
+                .setClaims(claims)
+                .setSubject(user.getUsername())
+                .setIssuedAt(new Date())
+                .setExpiration(refreshTokenExpirationDate == null ?
+                        new Date(System.currentTimeMillis() + REFRESH_TOKEN_VALIDITY) :
+                        Date.from(refreshTokenExpirationDate))
                 .signWith(getSignInKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -59,6 +76,14 @@ public class JwtUtil {
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+    public String extractType(String token) {
+        return extractClaim(token, claims -> claims.get("type", String.class));
     }
 
     public boolean validateToken(String token, UserDetails userDetails) {
