@@ -42,7 +42,7 @@ public class AuthServiceImpl implements AuthService {
         String encodedPassword = passwordEncoder.encode(password);
         User user = User.builder()
                 .username(registerRequest.getUsername())
-                .password(encodedPassword)
+                .passwordHash(encodedPassword)
                 .build();
         userRepository.save(user);
     }

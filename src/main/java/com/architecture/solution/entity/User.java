@@ -22,11 +22,17 @@ public class User extends BaseEntity implements UserDetails {
     @Column(length = 36)
     private String id;
 
-    @Column(unique = true)
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
+
+    @Column(name = "username", nullable = false, unique = true)
     private String username;
 
-    @JsonIgnore
-    private String password;
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
+
+    @Column(name = "displayed_name")
+    private String displayedName;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
