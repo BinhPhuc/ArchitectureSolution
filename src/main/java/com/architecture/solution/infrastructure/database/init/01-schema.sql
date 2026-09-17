@@ -17,7 +17,7 @@ CREATE TABLE `users` (
 
 CREATE TABLE `roles` (
   `id` varchar(36) PRIMARY KEY,
-  `name` ENUM ('RECRUITER', 'CANDIDATE') UNIQUE NOT NULL,
+  `name` ENUM ('ADMIN', 'RECRUITER', 'CANDIDATE') UNIQUE NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
   `last_modified_at` timestamp,
