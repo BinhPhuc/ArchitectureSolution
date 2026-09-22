@@ -1,6 +1,5 @@
 package com.architecture.solution.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.jspecify.annotations.Nullable;
@@ -38,9 +37,6 @@ public class User extends BaseEntity implements UserDetails {
 
     @Column(name = "refresh_token", unique = true)
     private String refreshToken;
-
-    @Column(name = "refresh_token_expiry")
-    private Instant refreshTokenExpiry;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

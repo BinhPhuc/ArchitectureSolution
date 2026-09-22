@@ -56,7 +56,7 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(bytes);
     }
 
-    private Claims extractAllClaims(String token) {
+    public Claims extractAllClaims(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(getSignInKey())
                 .build()
@@ -64,30 +64,25 @@ public class JwtUtil {
                 .getBody();
     }
 
-    public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
-        final Claims claims = this.extractAllClaims(token);
-        return claimsResolver.apply(claims);
+    public String extractUsername(Claims claims) {
+        return claims.getSubject();
     }
 
-    public boolean isTokenExpired(String token) {
-        Date expirationDate = this.extractClaim(token, Claims::getExpiration);
+    public Date extractExpiration(Claims claims) {
+        return claims.getExpiration();
+    }
+
+    public String extractType(Claims claims) {
+        return claims.get("type", String.class);
+    }
+
+    public boolean isTokenExpired(Claims claims) {
+        Date expirationDate = claims.getExpiration();
         return expirationDate.before(new Date());
     }
 
-    public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
-    }
-
-    public String extractType(String token) {
-        return extractClaim(token, claims -> claims.get("type", String.class));
-    }
-
-    public boolean validateToken(String token, UserDetails userDetails) {
-        String username = extractUsername(token);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+    public boolean validateToken(Claims claims, UserDetails userDetails) {
+        String username = extractUsername(claims);
+        return username.equals(userDetails.getUsername()) && !isTokenExpired(claims);
     }
 }
