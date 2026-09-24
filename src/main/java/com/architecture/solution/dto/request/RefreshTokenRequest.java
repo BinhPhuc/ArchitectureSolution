@@ -10,13 +10,10 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest {
-    // TODO: add more validation method
-    @NotNull
-    @NotBlank
-    private String username;
+public class RefreshTokenRequest {
 
     @NotNull
     @NotBlank
-    private String password;
+    @JsonProperty("refresh_token")
+    private String refreshToken;
 }

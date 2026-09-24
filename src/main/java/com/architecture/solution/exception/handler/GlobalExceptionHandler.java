@@ -8,10 +8,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import javax.security.sasl.AuthenticationException;
 import java.time.Instant;
 
 @RestControllerAdvice
@@ -60,7 +60,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                .message(ex.getMessage())
+                .message("Invalid username or password")
                 .statusCode(HttpStatus.UNAUTHORIZED.value())
                 .timestamp(Instant.now())
                 .path(request.getRequestURI())
