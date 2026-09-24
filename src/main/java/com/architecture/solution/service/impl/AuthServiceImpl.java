@@ -13,12 +13,14 @@ import com.architecture.solution.dto.request.LoginRequest;
 import com.architecture.solution.dto.request.RegisterRequest;
 import com.architecture.solution.exception.InvalidArgumentException;
 import com.architecture.solution.exception.ResourceExistsException;
+import com.architecture.solution.security.CustomUserDetails;
 import com.architecture.solution.service.AuthService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +58,8 @@ public class AuthServiceImpl implements AuthService {
             throw new ResourceExistsException("User with username " + registerRequest.getUsername() + " already exists");
         }
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new ResourceExistsException("User with email " + registerRequest.getEmail() + " already exists");
+            throw new ResourceExistsException("User with email " + registerRequest.getEmail() +
+                    " already exists");
         }
         String encodedPassword = passwordEncoder.encode(password);
         userRepository.save(User.builder()
@@ -67,7 +70,8 @@ public class AuthServiceImpl implements AuthService {
                 .build());
 
         User user = userRepository.findByUsername(registerRequest.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found after registration"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found after " +
+                        "registration"));
 
         for (RoleName roleName : roleNames) {
             if (roleName == RoleName.ADMIN) {
@@ -97,14 +101,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
-        User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        authenticationManager.authenticate(
+        Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsername(),
                         loginRequest.getPassword()
                 )
         );
+        User user = ((CustomUserDetails) authentication.getPrincipal()).getUser();
 
         String accessToken = jwtUtil.generateAccessToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user, null);
@@ -135,11 +138,12 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = userRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
-        if (!jwtUtil.validateToken(claims, user)) {
+        if (!jwtUtil.validateToken(claims, user.getUsername())) {
             throw new InvalidArgumentException("Invalid refresh token");
         }
         String newAccessToken = jwtUtil.generateAccessToken(user);
-        String newRefreshToken = jwtUtil.generateRefreshToken(user, jwtUtil.extractExpiration(claims).toInstant());
+        String newRefreshToken = jwtUtil.generateRefreshToken(user,
+                jwtUtil.extractExpiration(claims).toInstant());
         user.setRefreshToken(newRefreshToken);
         userRepository.save(user);
         return TokenResponse.builder()
@@ -161,7 +165,7 @@ public class AuthServiceImpl implements AuthService {
         }
         User user = userRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
-        if (!jwtUtil.validateToken(claims, user)) {
+        if (!jwtUtil.validateToken(claims, user.getUsername())) {
             throw new InvalidArgumentException("Invalid refresh token");
         }
         user.setRefreshToken(null);

@@ -8,7 +8,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -23,8 +22,8 @@ public class JwtUtil {
     @Value("${jwt.secretKey}")
     private String secretKey;
 
-    private static final long ACCESS_TOKEN_VALIDITY = 5 * 60 * 1000; // 5 minutes
-    private static final long REFRESH_TOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000; // 7 days
+    private static final long ACCESS_TOKEN_VALIDITY = 5 * 60 * 1000L; // 5 minutes
+    private static final long REFRESH_TOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000L; // 7 days
 
     public String generateAccessToken(User user) {
         Map<String, String> claims = new HashMap<>();
@@ -81,8 +80,8 @@ public class JwtUtil {
         return expirationDate.before(new Date());
     }
 
-    public boolean validateToken(Claims claims, UserDetails userDetails) {
-        String username = extractUsername(claims);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(claims);
+    public boolean validateToken(Claims claims, String username) {
+        String subject = extractUsername(claims);
+        return username.equals(subject) && !isTokenExpired(claims);
     }
 }
