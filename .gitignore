@@ -33,5 +33,5 @@ build/
 .vscode/
 
 /deploy/.env
-/deploy/.env.dev
+/deploy/env/.env.dev
 /src/main/resources/application-dev.yaml
