@@ -9,16 +9,16 @@ RUN mvn package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine
 
-RUN addgroup -S sa && adduser -S sa -G sa
+RUN addgroup -S as && adduser -S as -G as
 
 WORKDIR /app
 
-COPY --from=build --chown=sa:sa /app/target/solution-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build --chown=as:as /app/target/solution-0.0.1-SNAPSHOT.jar app.jar
 
 ENV JAVA_TOOL_OPTIONS="-Xmx512m -Xms256m"
 
 EXPOSE 8080
 
-USER sa
+USER as
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

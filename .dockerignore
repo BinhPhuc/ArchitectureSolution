@@ -28,7 +28,7 @@ logs/
 # Local environment and secrets
 .env
 .env.*
-!.env.example
+!deploy/.env.example
 
 # OS and temporary files
 .DS_Store

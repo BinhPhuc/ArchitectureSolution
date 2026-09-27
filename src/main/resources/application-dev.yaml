@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/hire_me
-    username: root
-    password: rootpassword
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/hire_me}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:rootpassword}
 
   jpa:
     hibernate:
