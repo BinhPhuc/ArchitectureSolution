@@ -1,0 +1,42 @@
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# Maven build output
+target/
+**/target/
+*.class
+
+# IDE and editor metadata
+.idea/
+.vscode/
+.settings/
+.classpath
+.factorypath
+.project
+*.iml
+*.ipr
+*.iws
+.sts4-cache/
+
+# Logs and runtime files
+*.log
+logs/
+*.pid
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# OS and temporary files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Project documentation not required by the image build
+README.md
+HELP.md
