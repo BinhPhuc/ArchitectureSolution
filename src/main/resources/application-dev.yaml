@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/hire_me
+    username: root
+    password: rootpassword
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+jwt:
+  secretKey: ftaMonD7gKNOWTzU96AnMZoYm/gcNr8UpYSVV6ud+ys=
+
+app:
+  admin:
+    email: admin@hireme.local
+    username: admin
+    password: Admin@123
+    displayed-name: Administrator
