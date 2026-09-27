@@ -2,20 +2,21 @@ services:
   mysql:
     image: mysql:8.4
     container_name: mysql
+    restart: unless-stopped
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./database/init:/docker-entrypoint-initdb.d:ro
+      - ../src/main/java/com/architecture/solution/infrastructure/database/init:/docker-entrypoint-initdb.d:ro
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}
     ports:
       - "3306:3306"
     healthcheck:
-      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-prootpassword" ]
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} --silent" ]
       interval: 10s
       timeout: 5s
       retries: 10
     networks:
-      - sa
+      - as
 
   rustfs:
     image: rustfs/rustfs:latest
@@ -25,8 +26,8 @@ services:
       - "9000:9000"
       - "9001:9001"
     environment:
-      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
-      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:?RUSTFS_ACCESS_KEY is required}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:?RUSTFS_SECRET_KEY is required}
       RUSTFS_ADDRESS: ":9000"
       RUSTFS_CONSOLE_ADDRESS: ":9001"
       RUSTFS_CONSOLE_ENABLE: "true"
@@ -42,11 +43,14 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+    networks:
+      - as
 
 volumes:
   mysql_data:
   rustfs-data:
 
 networks:
-  sa:
-    driver: bridge
+  as:
+    external: true
+    name: architecture_solution

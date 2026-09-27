@@ -6,4 +6,4 @@ spring:
     name: architecture-solution
 
   profiles:
-    active: dev
+    active: ${SPRING_PROFILES_ACTIVE:dev}

@@ -1,0 +1,19 @@
+services:
+  as:
+    image: ghcr.io/binhphuc/architecturesolution:latest
+    container_name: architecturesolution
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:?SPRING_PROFILES_ACTIVE is required}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:?SPRING_DATASOURCE_URL is required}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:?SPRING_DATASOURCE_USERNAME is required}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:?SPRING_DATASOURCE_PASSWORD is required}
+    ports:
+      - "8080:8080"
+    networks:
+      - as
+
+networks:
+  as:
+    external: true
+    name: architecture_solution
