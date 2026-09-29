@@ -16,7 +16,5 @@ public class CategoryResponse {
     private String name;
 
     @JsonProperty("job_count")
-    private int jobCount;
-
-
+    private Long jobCount;
 }

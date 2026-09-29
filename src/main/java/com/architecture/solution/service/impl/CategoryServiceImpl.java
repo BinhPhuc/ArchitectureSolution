@@ -24,7 +24,7 @@ public class CategoryServiceImpl implements CategoryService {
         for(CategoryJobCount categoryJobCount: categoryJobCountResponses){
             CategoryResponse categoryResponse = CategoryResponse.builder().id(categoryJobCount.getId())
                     .name(categoryJobCount.getName())
-                    .jobCount(categoryJobCount.getJobCount().intValue())
+                    .jobCount(categoryJobCount.getJobCount())
                     .build();
             categoryResponses.add(categoryResponse);
         }

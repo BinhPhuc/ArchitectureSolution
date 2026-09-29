@@ -20,6 +20,7 @@ public interface CategoryRepository extends JpaRepository<Category, String> {
                            AND j.status = com.architecture.solution.enums.JobStatus.OPEN
             WHERE c.isDeleted = false
             GROUP BY c.id, c.name
+            ORDER BY c.name
             """)
     List<CategoryJobCount> findAllCategoryWithJobCount();
 }
