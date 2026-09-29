@@ -15,19 +15,15 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RegisterRequest {
-    @NotNull
     @NotBlank
     private String email;
 
-    @NotNull
     @NotBlank
     private String username;
 
-    @NotNull
     @NotBlank
     private String password;
 
-    @NotNull
     @NotBlank
     @JsonProperty("retype_password")
     private String retypePassword;
@@ -35,8 +31,7 @@ public class RegisterRequest {
     @JsonProperty("displayed_name")
     private String displayedName;
 
-    @NotNull
     @NotEmpty
     @JsonProperty("roles")
-    private Set<@NotNull RoleName> roles;
+    private Set<RoleName> roles;
 }
