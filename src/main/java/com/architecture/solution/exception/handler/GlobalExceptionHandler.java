@@ -11,8 +11,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
+import java.util.Arrays;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -78,5 +80,23 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex,
+                                                                                   HttpServletRequest request) {
+        String message = "Invalid value '%s' for parameter '%s'".formatted(ex.getValue(), ex.getName());
+        Class<?> requiredType = ex.getRequiredType();
+        if (requiredType != null && requiredType.isEnum()) {
+            message += ". Allowed values: " + Arrays.toString(requiredType.getEnumConstants());
+        }
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                .message(message)
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .timestamp(Instant.now())
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 }

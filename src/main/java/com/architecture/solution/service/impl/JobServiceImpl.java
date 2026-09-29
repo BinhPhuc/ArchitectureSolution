@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -37,8 +38,10 @@ public class JobServiceImpl implements JobService {
                 .build();
     }
 
-    public PageResponse<List<JobResponse>> findByTitle(String title, int page, int size) {
-        Page<Job> pageJob = jobRepository.findByTitleContaining(title,
+    public PageResponse<List<JobResponse>> searchJobs(String title, JobType jobType, JobStatus status,
+                                                      int page, int size) {
+        String titleFilter = StringUtils.hasText(title) ? title.trim() : null;
+        Page<Job> pageJob = jobRepository.search(titleFilter, jobType, status,
                 PageResponseUtil.getDefaultPageable(size, page));
         return PageResponseUtil.mapPageJobToPageResponse(pageJob);
     }
@@ -46,18 +49,6 @@ public class JobServiceImpl implements JobService {
     public PageResponse<List<JobResponse>> findByRecruiterId(String recruiterId, int page,
                                                              int size) {
         Page<Job> pageJob = jobRepository.findByRecruiterId(recruiterId,
-                PageResponseUtil.getDefaultPageable(size, page));
-        return PageResponseUtil.mapPageJobToPageResponse(pageJob);
-    }
-
-    public PageResponse<List<JobResponse>> findByJobType(JobType jobType, int page, int size) {
-        Page<Job> pageJob = jobRepository.findByJobType(jobType,
-                PageResponseUtil.getDefaultPageable(size, page));
-        return PageResponseUtil.mapPageJobToPageResponse(pageJob);
-    }
-
-    public PageResponse<List<JobResponse>> findByStatus(JobStatus status, int page, int size) {
-        Page<Job> pageJob = jobRepository.findByStatus(status,
                 PageResponseUtil.getDefaultPageable(size, page));
         return PageResponseUtil.mapPageJobToPageResponse(pageJob);
     }

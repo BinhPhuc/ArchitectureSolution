@@ -3,6 +3,7 @@ package com.architecture.solution.util;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.response.JobResponse;
 import com.architecture.solution.entity.Job;
+import com.architecture.solution.exception.InvalidArgumentException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -29,7 +30,7 @@ public class PageResponseUtil {
             return jobResponse;
         });
         int totalPages = pageJobResponse.getTotalPages();
-        int pageNum = pageJobResponse.getNumber();
+        int pageNum = pageJobResponse.getNumber() + 1;
         int pageSize = pageJobResponse.getSize();
         List<JobResponse> content = pageJobResponse.getContent();
         return PageResponse.
@@ -42,6 +43,12 @@ public class PageResponseUtil {
     }
 
     public static Pageable getDefaultPageable(int size, int page) {
-        return PageRequest.of(page, size, Sort.by("createdAt").descending());
+        if (page < 1) {
+            throw new InvalidArgumentException("Page must be greater than or equal to 1");
+        }
+        if (size < 1) {
+            throw new InvalidArgumentException("Size must be greater than or equal to 1");
+        }
+        return PageRequest.of(page - 1, size, Sort.by("createdAt").descending());
     }
 }

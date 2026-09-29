@@ -10,11 +10,8 @@ import java.util.List;
 public interface JobService {
     JobResponse getJobById(String jobId);
 
-    PageResponse<List<JobResponse>> findByTitle(String title, int page, int size);
+    PageResponse<List<JobResponse>> searchJobs(String title, JobType jobType, JobStatus status,
+                                               int page, int size);
 
     PageResponse<List<JobResponse>> findByRecruiterId(String recruiterId, int page, int size);
-
-    PageResponse<List<JobResponse>> findByJobType(JobType jobType, int page, int size);
-
-    PageResponse<List<JobResponse>> findByStatus(JobStatus jobStatus, int page, int size);
 }

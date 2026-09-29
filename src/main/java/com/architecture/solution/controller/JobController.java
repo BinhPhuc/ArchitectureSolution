@@ -30,41 +30,26 @@ public class JobController {
         return ResponseEntity.ok(ApiResponse.success(jobResponse));
     }
 
-    @Operation(summary = "Get jobs by title", description = "Retrieve jobs by title")
+    @Operation(summary = "Search jobs", description = "Search jobs by title, job type and status. All filters are optional")
     @GetMapping("")
-    public ResponseEntity<ApiResponse<PageResponse<List<JobResponse>>>> getJobsByTitle(@RequestParam(name = "page") int page,
-                                                                                       @RequestParam(name = "size") int size,
-                                                                                       @RequestParam(name = "title") String title) {
-        PageResponse<List<JobResponse>> pageResponse = jobService.findByTitle(title, page, size);
+    public ResponseEntity<ApiResponse<PageResponse<List<JobResponse>>>> searchJobs(@RequestParam(name = "page", defaultValue = "1") int page,
+                                                                                   @RequestParam(name = "size", defaultValue = "10") int size,
+                                                                                   @RequestParam(name = "title", required = false) String title,
+                                                                                   @RequestParam(name = "jobType", required = false) JobType jobType,
+                                                                                   @RequestParam(name = "status", required = false) JobStatus status) {
+        PageResponse<List<JobResponse>> pageResponse = jobService.searchJobs(title, jobType,
+                status, page, size);
         return ResponseEntity.ok(ApiResponse.success(pageResponse));
     }
 
     // TODO: move this method to RecruiterController later
     @Operation(summary = "Get jobs by recruiterID", description = "Retrieve jobs by recruited id")
-    @GetMapping("/recruiter-id/{}")
-    public ResponseEntity<ApiResponse<PageResponse<List<JobResponse>>>> getJobsByRecruiterId(@RequestParam(name = "page") int page,
-                                                                                             @RequestParam(name = "size") int size,
-                                                                                             @RequestParam(name = "recruiterId") String recruiterId) {
+    @GetMapping("/recruiter-id/{recruiterId}")
+    public ResponseEntity<ApiResponse<PageResponse<List<JobResponse>>>> getJobsByRecruiterId(@RequestParam(name = "page", defaultValue = "1") int page,
+                                                                                             @RequestParam(name = "size", defaultValue = "10") int size,
+                                                                                             @PathVariable String recruiterId) {
         PageResponse<List<JobResponse>> pageResponse = jobService.findByRecruiterId(recruiterId,
                 page, size);
-        return ResponseEntity.ok(ApiResponse.success(pageResponse));
-    }
-
-    @Operation(summary = "Get jobs by JobType", description = "Retrieve jobs by job type")
-    @GetMapping("")
-    public ResponseEntity<ApiResponse<PageResponse<List<JobResponse>>>> getJobsByJobType(@RequestParam(name = "page") int page,
-                                                                                         @RequestParam(name = "size") int size,
-                                                                                         @RequestParam(name = "jobType") JobType jobType) {
-        PageResponse<List<JobResponse>> pageResponse = jobService.findByJobType(jobType, page, size);
-        return ResponseEntity.ok(ApiResponse.success(pageResponse));
-    }
-
-    @Operation(summary = "Get jobs by status", description = "Retrieve jobs by status")
-    @GetMapping("")
-    public ResponseEntity<ApiResponse<PageResponse<List<JobResponse>>>> getJobsByStatus(@RequestParam(name = "page") int page,
-                                                                                        @RequestParam(name = "size") int size,
-                                                                                        @RequestParam(name = "status") JobStatus status) {
-        PageResponse<List<JobResponse>> pageResponse = jobService.findByStatus(status, page, size);
         return ResponseEntity.ok(ApiResponse.success(pageResponse));
     }
 }
