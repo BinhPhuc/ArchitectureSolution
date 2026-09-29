@@ -4,6 +4,7 @@ import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.math.BigDecimal;
 
@@ -14,6 +15,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "jobs")
+@SQLRestriction("is_deleted = false")
 public class Job extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
