@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 @Builder
 @Getter
@@ -15,6 +16,7 @@ import java.math.BigDecimal;
 public class JobResponse {
     @JsonProperty("id")
     private String id;
+
     @JsonProperty("title")
     private String title;
 
@@ -31,10 +33,11 @@ public class JobResponse {
     private BigDecimal salaryMax;
 
     @JsonProperty("status")
-    private JobStatus status = JobStatus.OPEN;
+    private JobStatus status;
 
     @JsonProperty("job_type")
     private JobType jobType;
 
-
+    @JsonProperty("created_at")
+    private Instant createdAt;
 }
