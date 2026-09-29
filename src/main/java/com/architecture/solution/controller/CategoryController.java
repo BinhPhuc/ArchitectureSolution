@@ -23,8 +23,8 @@ import java.util.List;
 public class CategoryController {
     private final CategoryService categoryService;
 
-    @Operation(summary = "Show all category", description = "show category with this number of job")
-    @GetMapping()
+    @Operation(summary = "Show all category", description = "Show category with this number of job")
+    @GetMapping("")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategory() {
         List<CategoryResponse> categoryResponses = categoryService.getAllCategory();
         return ResponseEntity.ok(ApiResponse.success(categoryResponses));

@@ -15,8 +15,8 @@ public class CategoryResponse {
     @JsonProperty("name")
     private String name;
 
-    @JsonProperty("count_number_job")
-    private int count;
+    @JsonProperty("job_count")
+    private int jobCount;
 
 
 }

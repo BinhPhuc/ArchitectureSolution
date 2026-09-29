@@ -1,4 +1,4 @@
-package com.architecture.solution.dto.response;
+package com.architecture.solution.repository.projection;
 
 import lombok.*;
 
@@ -7,8 +7,10 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryJobCountResponse {
+public class CategoryJobCount {
     private String id;
+
     private String name;
-    private Long count;
+
+    private Long jobCount;
 }
