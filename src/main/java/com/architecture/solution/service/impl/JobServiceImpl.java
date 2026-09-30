@@ -8,7 +8,7 @@ import com.architecture.solution.enums.JobType;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.JobRepository;
 import com.architecture.solution.service.JobService;
-import com.architecture.solution.util.PageResponseUtil;
+import com.architecture.solution.util.PageUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -42,14 +42,14 @@ public class JobServiceImpl implements JobService {
                                                       int page, int size) {
         String titleFilter = StringUtils.hasText(title) ? title.trim() : null;
         Page<Job> pageJob = jobRepository.search(titleFilter, jobType, status,
-                PageResponseUtil.getDefaultPageable(size, page));
-        return PageResponseUtil.mapPageJobToPageResponse(pageJob);
+                PageUtil.getDefaultPageable(size, page));
+        return PageUtil.mapPageJobToPageResponse(pageJob);
     }
 
     public PageResponse<List<JobResponse>> findByRecruiterId(String recruiterId, int page,
                                                              int size) {
         Page<Job> pageJob = jobRepository.findByRecruiterId(recruiterId,
-                PageResponseUtil.getDefaultPageable(size, page));
-        return PageResponseUtil.mapPageJobToPageResponse(pageJob);
+                PageUtil.getDefaultPageable(size, page));
+        return PageUtil.mapPageJobToPageResponse(pageJob);
     }
 }
