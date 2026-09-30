@@ -1,4 +1,4 @@
-package com.architecture.solution.dto.request;
+package com.architecture.solution.dto.auth.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;

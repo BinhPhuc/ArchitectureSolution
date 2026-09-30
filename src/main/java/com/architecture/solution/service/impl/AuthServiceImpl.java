@@ -1,16 +1,16 @@
 package com.architecture.solution.service.impl;
 
-import com.architecture.solution.dto.request.RefreshTokenRequest;
-import com.architecture.solution.dto.response.LoginResponse;
-import com.architecture.solution.dto.response.TokenResponse;
+import com.architecture.solution.dto.auth.request.RefreshTokenRequest;
+import com.architecture.solution.dto.auth.response.LoginResponse;
+import com.architecture.solution.dto.auth.response.TokenResponse;
 import com.architecture.solution.entity.*;
 import com.architecture.solution.enums.RoleName;
 import com.architecture.solution.enums.TokenType;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.*;
 import com.architecture.solution.util.JwtUtil;
-import com.architecture.solution.dto.request.LoginRequest;
-import com.architecture.solution.dto.request.RegisterRequest;
+import com.architecture.solution.dto.auth.request.LoginRequest;
+import com.architecture.solution.dto.auth.request.RegisterRequest;
 import com.architecture.solution.exception.InvalidArgumentException;
 import com.architecture.solution.exception.ResourceExistsException;
 import com.architecture.solution.security.CustomUserDetails;

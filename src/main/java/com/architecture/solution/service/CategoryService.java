@@ -1,6 +1,6 @@
 package com.architecture.solution.service;
 
-import com.architecture.solution.dto.response.CategoryResponse;
+import com.architecture.solution.dto.category.response.CategoryResponse;
 
 import java.util.List;
 

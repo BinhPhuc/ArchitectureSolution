@@ -3,7 +3,7 @@ package com.architecture.solution.controller;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.ErrorResponse;
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.response.JobResponse;
+import com.architecture.solution.dto.job.response.JobResponse;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
 import com.architecture.solution.service.JobService;

@@ -1,7 +1,7 @@
 package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.response.JobResponse;
+import com.architecture.solution.dto.job.response.JobResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;

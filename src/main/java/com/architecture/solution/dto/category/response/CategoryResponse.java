@@ -1,4 +1,4 @@
-package com.architecture.solution.dto.response;
+package com.architecture.solution.dto.category.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;

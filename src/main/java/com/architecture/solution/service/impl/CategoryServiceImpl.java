@@ -1,7 +1,7 @@
 package com.architecture.solution.service.impl;
 
 import com.architecture.solution.repository.projection.CategoryJobCount;
-import com.architecture.solution.dto.response.CategoryResponse;
+import com.architecture.solution.dto.category.response.CategoryResponse;
 import com.architecture.solution.repository.CategoryRepository;
 import com.architecture.solution.service.CategoryService;
 import lombok.RequiredArgsConstructor;

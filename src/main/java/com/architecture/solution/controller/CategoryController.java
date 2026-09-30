@@ -1,7 +1,7 @@
 package com.architecture.solution.controller;
 
 import com.architecture.solution.dto.common.ApiResponse;
-import com.architecture.solution.dto.response.CategoryResponse;
+import com.architecture.solution.dto.category.response.CategoryResponse;
 import com.architecture.solution.service.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
