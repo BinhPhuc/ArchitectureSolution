@@ -13,6 +13,6 @@ public class AuditorAwareImpl implements AuditorAware<String> {
         if (authentication != null) {
             return Optional.of(authentication.getName());
         }
-        return Optional.of("anonymous");
+        return Optional.of("system");
     }
 }

@@ -15,10 +15,9 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 @Component
-public class JwtUtil {
+public class JwtUtils {
     @Value("${jwt.secretKey}")
     private String secretKey;
 
