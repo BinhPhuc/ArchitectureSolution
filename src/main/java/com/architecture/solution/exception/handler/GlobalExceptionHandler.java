@@ -4,6 +4,7 @@ import com.architecture.solution.dto.common.ErrorResponse;
 import com.architecture.solution.exception.InvalidArgumentException;
 import com.architecture.solution.exception.ResourceExistsException;
 import com.architecture.solution.exception.ResourceNotFoundException;
+import com.architecture.solution.exception.UnauthorizedException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -88,7 +89,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex,
                                                                                    HttpServletRequest request) {
-        String message = "Invalid value '%s' for parameter '%s'".formatted(ex.getValue(), ex.getName());
+        String message = "Invalid value '%s' for parameter '%s'".formatted(ex.getValue(),
+                ex.getName());
         Class<?> requiredType = ex.getRequiredType();
         if (requiredType != null && requiredType.isEnum()) {
             message += ". Allowed values: " + Arrays.toString(requiredType.getEnumConstants());
@@ -120,7 +122,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(JwtException.class)
-    public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex, HttpServletRequest request) {
+    public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex,
+                                                            HttpServletRequest request) {
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .message("Invalid or expired token")
@@ -129,5 +132,18 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorizedException(UnauthorizedException ex,
+                                                                     HttpServletRequest request) {
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .error(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                .message(ex.getMessage())
+                .statusCode(HttpStatus.UNAUTHORIZED.value())
+                .timestamp(Instant.now())
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 }

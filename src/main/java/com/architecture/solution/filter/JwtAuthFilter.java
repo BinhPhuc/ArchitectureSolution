@@ -1,7 +1,7 @@
 package com.architecture.solution.filter;
 
 import com.architecture.solution.enums.TokenType;
-import com.architecture.solution.util.JwtUtil;
+import com.architecture.solution.util.JwtUtils;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -25,7 +25,7 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
-    private final JwtUtil jwtUtil;
+    private final JwtUtils jwtUtil;
     private final UserDetailsService userDetailsService;
 
     @Override

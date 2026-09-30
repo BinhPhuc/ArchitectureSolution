@@ -11,8 +11,8 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
-public class PageUtil {
-    private PageUtil() {
+public class PageUtils {
+    private PageUtils() {
     }
 
     public static PageResponse<List<JobResponse>> mapPageJobToPageResponse(Page<Job> pageJob) {

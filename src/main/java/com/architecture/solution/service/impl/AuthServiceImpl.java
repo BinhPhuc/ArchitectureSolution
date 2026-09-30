@@ -8,7 +8,7 @@ import com.architecture.solution.enums.RoleName;
 import com.architecture.solution.enums.TokenType;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.*;
-import com.architecture.solution.util.JwtUtil;
+import com.architecture.solution.util.JwtUtils;
 import com.architecture.solution.dto.auth.request.LoginRequest;
 import com.architecture.solution.dto.auth.request.RegisterRequest;
 import com.architecture.solution.exception.InvalidArgumentException;
@@ -38,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final RecruiterRepository recruiterRepository;
 
     private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    private final JwtUtils jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
     @Override
