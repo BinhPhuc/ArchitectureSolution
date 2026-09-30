@@ -25,6 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 
 @Service
@@ -109,7 +110,8 @@ public class AuthServiceImpl implements AuthService {
         );
         User user = ((CustomUserDetails) authentication.getPrincipal()).getUser();
 
-        String accessToken = jwtUtil.generateAccessToken(user);
+        List<RoleName> roles = userRoleRepository.findRoleNamesByUserId(user.getId());
+        String accessToken = jwtUtil.generateAccessToken(user, roles);
         String refreshToken = jwtUtil.generateRefreshToken(user, null);
 
         user.setRefreshToken(refreshToken);
@@ -122,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshToken)
                 .expiresAt(jwtUtil.extractExpiration(claims).toInstant())
                 .username(user.getUsername())
-                .roles(userRoleRepository.findRoleNamesByUserId(user.getId()))
+                .roles(roles)
                 .build();
     }
 
@@ -141,7 +143,8 @@ public class AuthServiceImpl implements AuthService {
         if (!jwtUtil.validateToken(claims, user.getUsername())) {
             throw new InvalidArgumentException("Invalid refresh token");
         }
-        String newAccessToken = jwtUtil.generateAccessToken(user);
+        String newAccessToken = jwtUtil.generateAccessToken(user,
+                userRoleRepository.findRoleNamesByUserId(user.getId()));
         String newRefreshToken = jwtUtil.generateRefreshToken(user,
                 jwtUtil.extractExpiration(claims).toInstant());
         user.setRefreshToken(newRefreshToken);

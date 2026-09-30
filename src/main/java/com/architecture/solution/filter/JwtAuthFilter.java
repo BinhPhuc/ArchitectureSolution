@@ -1,6 +1,8 @@
 package com.architecture.solution.filter;
 
+import com.architecture.solution.entity.User;
 import com.architecture.solution.enums.TokenType;
+import com.architecture.solution.security.CustomUserDetails;
 import com.architecture.solution.util.JwtUtil;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -11,22 +13,21 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
-    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -40,7 +41,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             authenticate(request, authHeader.substring(7));
-        } catch (JwtException | UsernameNotFoundException ex) {
+        } catch (JwtException | IllegalArgumentException ex) {
             log.debug("Rejected JWT for {}: {}", request.getRequestURI(), ex.getMessage());
             SecurityContextHolder.clearContext();
         }
@@ -59,13 +60,20 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        UserDetails user = userDetailsService.loadUserByUsername(username);
-        if (!jwtUtil.validateToken(claims, user.getUsername())) {
-            return;
-        }
+        List<GrantedAuthority> authorities = jwtUtil.extractRoles(claims).stream()
+                .map(roleName -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + roleName.name()))
+                .toList();
+
+        CustomUserDetails principal = CustomUserDetails.builder()
+                .user(User.builder()
+                        .id(jwtUtil.extractUserId(claims))
+                        .username(username)
+                        .build())
+                .authorities(authorities)
+                .build();
 
         UsernamePasswordAuthenticationToken authToken =
-                new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                new UsernamePasswordAuthenticationToken(principal, null, authorities);
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
     }

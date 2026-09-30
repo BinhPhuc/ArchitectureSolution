@@ -1,6 +1,7 @@
 package com.architecture.solution.util;
 
 import com.architecture.solution.entity.User;
+import com.architecture.solution.enums.RoleName;
 import com.architecture.solution.enums.TokenType;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -13,7 +14,9 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -25,9 +28,11 @@ public class JwtUtil {
     private static final long ACCESS_TOKEN_VALIDITY = 5 * 60 * 1000L; // 5 minutes
     private static final long REFRESH_TOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000L; // 7 days
 
-    public String generateAccessToken(User user) {
-        Map<String, String> claims = new HashMap<>();
+    public String generateAccessToken(User user, Collection<RoleName> roles) {
+        Map<String, Object> claims = new HashMap<>();
         claims.put("type", TokenType.ACCESS.toString());
+        claims.put("userId", user.getId());
+        claims.put("roles", roles.stream().map(RoleName::name).toList());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getUsername())
@@ -73,6 +78,20 @@ public class JwtUtil {
 
     public String extractType(Claims claims) {
         return claims.get("type", String.class);
+    }
+
+    public String extractUserId(Claims claims) {
+        return claims.get("userId", String.class);
+    }
+
+    public List<RoleName> extractRoles(Claims claims) {
+        List<?> roles = claims.get("roles", List.class);
+        if (roles == null) {
+            return List.of();
+        }
+        return roles.stream()
+                .map(role -> RoleName.valueOf(role.toString()))
+                .toList();
     }
 
     public boolean isTokenExpired(Claims claims) {
