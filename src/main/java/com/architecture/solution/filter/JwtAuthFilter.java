@@ -49,6 +49,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     }
 
     private void authenticate(HttpServletRequest request, String token) {
+        // TODO: we are facing to problem that make 2 queries per authentication phase to the database
+        // SOLUTION: the solution could be is store role and userId, username in the token and then extract them from the token instead of querying the database
         final Claims claims = jwtUtil.extractAllClaims(token);
         if (!TokenType.ACCESS.name().equals(jwtUtil.extractType(claims))) {
             return;
