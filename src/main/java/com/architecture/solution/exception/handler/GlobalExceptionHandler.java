@@ -1,13 +1,11 @@
 package com.architecture.solution.exception.handler;
 
 import com.architecture.solution.dto.common.ErrorResponse;
-import com.architecture.solution.exception.InvalidArgumentException;
-import com.architecture.solution.exception.ResourceExistsException;
-import com.architecture.solution.exception.ResourceNotFoundException;
-import com.architecture.solution.exception.UnauthorizedException;
+import com.architecture.solution.exception.*;
 import com.architecture.solution.util.ErrorResponseUtils;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.apache.coyote.Response;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -90,5 +88,17 @@ public class GlobalExceptionHandler {
                                                                      HttpServletRequest request) {
         return ErrorResponseUtils.toResponseEntity(
                 HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(BucketNotEmptyException.class)
+    public ResponseEntity<ErrorResponse> handleBucketNotEmptyException(BucketNotEmptyException ex, HttpServletRequest request) {
+        return ErrorResponseUtils.toResponseEntity(
+                HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(IllegalFileException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalFileException(IllegalFileException ex, HttpServletRequest request) {
+        return ErrorResponseUtils.toResponseEntity(
+                HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
     }
 }
