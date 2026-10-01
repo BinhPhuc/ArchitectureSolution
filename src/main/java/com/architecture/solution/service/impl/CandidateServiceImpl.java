@@ -10,6 +10,7 @@ import com.architecture.solution.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,6 +19,7 @@ public class CandidateServiceImpl implements CandidateService {
     private final CandidateRepository candidateRepository;
 
     @Override
+    @Transactional
     public UpdateCandidateProfileResponse updateCandidateProfile(UpdateCandidateProfileRequest request) {
         String userId = SecurityUtils.getUserId();
         Candidate candidate = candidateRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not " +
@@ -34,7 +36,6 @@ public class CandidateServiceImpl implements CandidateService {
                 .userId(candidate.getUserId())
                 .bio(candidate.getBio())
                 .phone(candidate.getPhone())
-                .cvUrl(candidate.getCvUrl())
                 .lastModifiedAt(candidate.getLastModifiedAt())
                 .build();
     }

@@ -46,10 +46,25 @@ CREATE TABLE `recruiters` (
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
+CREATE TABLE `files` (
+  `id` varchar(36) PRIMARY KEY,
+  `bucket` varchar(255) NOT NULL,
+  `object_key` varchar(1024) NOT NULL,
+  `original_filename` varchar(255) NOT NULL,
+  `content_type` varchar(255) NOT NULL,
+  `size_bytes` bigint NOT NULL,
+  `status` ENUM ('PENDING', 'READY', 'FAILED', 'DELETING') NOT NULL DEFAULT 'PENDING',
+  `created_at` timestamp NOT NULL,
+  `created_by` varchar(36) NOT NULL,
+  `last_modified_at` timestamp,
+  `last_modified_by` varchar(36),
+  `is_deleted` boolean NOT NULL DEFAULT false
+);
+
 CREATE TABLE `candidates` (
   `user_id` varchar(36) PRIMARY KEY,
   `bio` text,
-  `cv_url` varchar(255),
+  `cv_file_id` varchar(255),
   `phone` varchar(255),
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
@@ -83,7 +98,7 @@ CREATE TABLE `job_applications` (
   `candidate_id` varchar(36) NOT NULL,
   `job_id` varchar(36) NOT NULL,
   `status` ENUM ('PENDING', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
-  `cv_url` varchar(255) NOT NULL,
+  `cv_file_id` varchar(255),
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
   `last_modified_at` timestamp,
@@ -126,11 +141,15 @@ ALTER TABLE `user_roles` ADD FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
 
 ALTER TABLE `candidates` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
+ALTER TABLE `candidates` ADD FOREIGN KEY (`cv_file_id`) REFERENCES `files` (`id`);
+
 ALTER TABLE `jobs` ADD FOREIGN KEY (`recruiter_id`) REFERENCES `recruiters` (`user_id`);
 
 ALTER TABLE `job_applications` ADD FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`);
 
 ALTER TABLE `job_applications` ADD FOREIGN KEY (`candidate_id`) REFERENCES `candidates` (`user_id`);
+
+ALTER TABLE `job_applications` ADD FOREIGN KEY (`cv_file_id`) REFERENCES `files` (`id`);
 
 ALTER TABLE `job_categories` ADD FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`);
 
