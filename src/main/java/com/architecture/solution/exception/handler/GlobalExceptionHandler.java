@@ -5,7 +5,6 @@ import com.architecture.solution.exception.*;
 import com.architecture.solution.util.ErrorResponseUtils;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.coyote.Response;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,7 @@
 package com.architecture.solution.service;
 
-import java.io.File;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface S3ObjectService {
-    String putObject(String bucketName, String objectKey, File file);
+    void putObject(String bucketName, String objectKey, MultipartFile file);
 }

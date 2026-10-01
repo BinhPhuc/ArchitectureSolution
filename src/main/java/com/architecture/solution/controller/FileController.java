@@ -1,7 +1,7 @@
 package com.architecture.solution.controller;
 
 import com.architecture.solution.dto.common.ApiResponse;
-import com.architecture.solution.dto.file.response.CvUploadResponse;
+import com.architecture.solution.dto.file.response.FileUploadResponse;
 import com.architecture.solution.service.FileService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +22,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileController {
     private final FileService fileService;
 
-    @PostMapping("/upload/cv")
     @PreAuthorize("hasRole('CANDIDATE')")
-    public ResponseEntity<ApiResponse<CvUploadResponse>> uploadCV(@RequestParam("file") MultipartFile file) {
-        CvUploadResponse response = fileService.uploadCV(file);
+    @PostMapping("/upload/cv")
+    public ResponseEntity<ApiResponse<FileUploadResponse>> uploadCV(@RequestParam("file") MultipartFile file) {
+        FileUploadResponse response = fileService.uploadCV(file);
         return ResponseEntity.ok(ApiResponse.success(response, "File uploaded successfully"));
     }
 }

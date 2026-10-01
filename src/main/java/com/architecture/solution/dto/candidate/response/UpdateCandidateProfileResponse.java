@@ -20,9 +20,6 @@ public class UpdateCandidateProfileResponse {
     @JsonProperty("phone")
     private String phone;
 
-    @JsonProperty("cv_url")
-    private String cvUrl;
-
     @JsonProperty("last_modified_at")
     private Instant lastModifiedAt;
 }
