@@ -14,15 +14,6 @@ public class UpdateCandidateProfileResponse {
     @JsonProperty("user_id")
     private String userId;
 
-    @JsonProperty("email")
-    private String email;
-
-    @JsonProperty("username")
-    private String username;
-
-    @JsonProperty("displayed_name")
-    private String displayedName;
-
     @JsonProperty("bio")
     private String bio;
 
