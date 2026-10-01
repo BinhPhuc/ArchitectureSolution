@@ -14,6 +14,8 @@ import org.springframework.stereotype.Repository;
 public interface JobRepository extends JpaRepository<Job, String> {
     Page<Job> findByRecruiterId(String recruiterId, Pageable pageable);
 
+    Page<Job> findByRecruiterIdAndStatus(String recruiterId, JobStatus jobStatus, Pageable pageable);
+
     @Query("""
             SELECT j FROM Job j
             WHERE (:title IS NULL OR j.title LIKE CONCAT('%', :title, '%'))
@@ -24,4 +26,6 @@ public interface JobRepository extends JpaRepository<Job, String> {
                      @Param("jobType") JobType jobType,
                      @Param("status") JobStatus status,
                      Pageable pageable);
+
+
 }
