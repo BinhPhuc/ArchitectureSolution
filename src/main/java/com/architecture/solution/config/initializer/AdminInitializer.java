@@ -1,5 +1,6 @@
-package com.architecture.solution.config;
+package com.architecture.solution.config.initializer;
 
+import com.architecture.solution.config.properties.AdminProperties;
 import com.architecture.solution.entity.Role;
 import com.architecture.solution.entity.User;
 import com.architecture.solution.entity.UserRole;
