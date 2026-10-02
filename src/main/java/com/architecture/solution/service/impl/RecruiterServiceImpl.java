@@ -1,7 +1,7 @@
 package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.job.response.JobResponse;
+import com.architecture.solution.dto.job.response.SearchJobResponse;
 import com.architecture.solution.dto.recruiter.response.RecruiterResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.entity.Recruiter;
@@ -29,9 +29,9 @@ public class RecruiterServiceImpl implements RecruiterService {
     public RecruiterResponse getRecruiterById(String recruiterId, int page, int size) {
         Recruiter recruiter = recruiterRepository.findByUserIdAndIsDeletedFalse(recruiterId)
                 .orElseThrow(() -> new ResourceNotFoundException("Can not found this recruiter id"));
-        Page<Job> pageJobs = jobRepository.findByRecruiterIdAndStatusAndIsDeletedFalse(recruiterId,
+        Page<Job> pageJobs = jobRepository.findByRecruiterIdAndStatusEqualsAndIsDeletedFalse(recruiterId,
                 JobStatus.OPEN, PageUtils.getDefaultPageable(size, page));
-        PageResponse<List<JobResponse>> pageResponse = PageUtils.mapPageJobToPageResponse(pageJobs);
+        PageResponse<List<SearchJobResponse>> pageResponse = PageUtils.mapPageJobToPageResponse(pageJobs);
         return RecruiterResponse.builder()
                 .userId(recruiter.getUserId())
                 .companyName((recruiter.getCompanyName()))

@@ -1,7 +1,7 @@
 package com.architecture.solution.util;
 
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.job.response.JobResponse;
+import com.architecture.solution.dto.job.response.SearchJobResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.exception.InvalidArgumentException;
 import org.springframework.data.domain.Page;
@@ -15,9 +15,9 @@ public class PageUtils {
     private PageUtils() {
     }
 
-    public static PageResponse<List<JobResponse>> mapPageJobToPageResponse(Page<Job> pageJob) {
-        Page<JobResponse> pageJobResponse = pageJob.map(job -> {
-            JobResponse jobResponse = new JobResponse();
+    public static PageResponse<List<SearchJobResponse>> mapPageJobToPageResponse(Page<Job> pageJob) {
+        Page<SearchJobResponse> pageJobResponse = pageJob.map(job -> {
+            SearchJobResponse jobResponse = new SearchJobResponse();
             jobResponse.setJobType(job.getJobType());
             jobResponse.setId(job.getId());
             jobResponse.setDescription(job.getDescription());
@@ -32,9 +32,9 @@ public class PageUtils {
         int totalPages = pageJobResponse.getTotalPages();
         int pageNum = pageJobResponse.getNumber() + 1;
         int pageSize = pageJobResponse.getSize();
-        List<JobResponse> content = pageJobResponse.getContent();
+        List<SearchJobResponse> content = pageJobResponse.getContent();
         return PageResponse.
-                <List<JobResponse>>builder()
+                <List<SearchJobResponse>>builder()
                 .totalPage(totalPages)
                 .pageNum(pageNum)
                 .pageSize(pageSize)
