@@ -31,6 +31,6 @@ public class JobApplication extends BaseEntity {
     @Column(name = "status", nullable = false)
     private ApplicationStatus status = ApplicationStatus.PENDING;
 
-    @Column(name = "cv_file_id")
+    @Column(name = "cv_file_id", length = 36, nullable = false)
     private String cvFileId;
 }

@@ -54,6 +54,7 @@ CREATE TABLE `files` (
   `content_type` varchar(255) NOT NULL,
   `size_bytes` bigint NOT NULL,
   `status` ENUM ('PENDING', 'READY', 'FAILED', 'DELETING') NOT NULL DEFAULT 'PENDING',
+  `owner_id` varchar(36) NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
   `last_modified_at` timestamp,
@@ -64,7 +65,7 @@ CREATE TABLE `files` (
 CREATE TABLE `candidates` (
   `user_id` varchar(36) PRIMARY KEY,
   `bio` text,
-  `cv_file_id` varchar(255),
+  `cv_file_id` varchar(36) UNIQUE,
   `phone` varchar(255),
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
@@ -98,7 +99,7 @@ CREATE TABLE `job_applications` (
   `candidate_id` varchar(36) NOT NULL,
   `job_id` varchar(36) NOT NULL,
   `status` ENUM ('PENDING', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
-  `cv_file_id` varchar(255),
+  `cv_file_id` varchar(36) NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
   `last_modified_at` timestamp,
@@ -154,5 +155,7 @@ ALTER TABLE `job_applications` ADD FOREIGN KEY (`cv_file_id`) REFERENCES `files`
 ALTER TABLE `job_categories` ADD FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`);
 
 ALTER TABLE `job_categories` ADD FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
+
+ALTER TABLE `files` ADD FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`);
 
 ALTER TABLE `users` ADD COLUMN `refresh_token` varchar(255) UNIQUE;

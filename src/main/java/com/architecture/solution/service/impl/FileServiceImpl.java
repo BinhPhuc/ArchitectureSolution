@@ -47,6 +47,7 @@ public class FileServiceImpl implements FileService {
                 .contentType(contentType)
                 .sizeBytes(sizeBytes)
                 .status(FileStatus.READY)
+                .ownerId(userId)
                 .build();
         fileRepository.save(newFile);
         String cvFileId = newFile.getId();
