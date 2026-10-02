@@ -18,9 +18,8 @@ public class RecruiterResponse {
     private String userId;
     @JsonProperty("company_name")
     private String companyName;
-    @JsonProperty("creat_at")
-    private Instant createAt;
-    @JsonProperty("page_Response")
-    private PageResponse<List<JobResponse>> pageResponse;
-
+    @JsonProperty("created_at")
+    private Instant createdAt;
+    @JsonProperty("jobs")
+    private PageResponse<List<JobResponse>> jobs;
 }

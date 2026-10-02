@@ -10,15 +10,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface JobRepository extends JpaRepository<Job, String> {
-    Page<Job> findByRecruiterId(String recruiterId, Pageable pageable);
+    Optional<Job> findByIdAndIsDeletedFalse(String id);
 
-    Page<Job> findByRecruiterIdAndStatus(String recruiterId, JobStatus jobStatus, Pageable pageable);
+    Page<Job> findByRecruiterIdAndIsDeletedFalse(String recruiterId, Pageable pageable);
+
+    Page<Job> findByRecruiterIdAndStatusAndIsDeletedFalse(String recruiterId, JobStatus jobStatus, Pageable pageable);
 
     @Query("""
             SELECT j FROM Job j
-            WHERE (:title IS NULL OR j.title LIKE CONCAT('%', :title, '%'))
+            WHERE j.isDeleted = false
+              AND (:title IS NULL OR j.title LIKE CONCAT('%', :title, '%'))
               AND (:jobType IS NULL OR j.jobType = :jobType)
               AND (:status IS NULL OR j.status = :status)
             """)
@@ -26,6 +31,4 @@ public interface JobRepository extends JpaRepository<Job, String> {
                      @Param("jobType") JobType jobType,
                      @Param("status") JobStatus status,
                      Pageable pageable);
-
-
 }

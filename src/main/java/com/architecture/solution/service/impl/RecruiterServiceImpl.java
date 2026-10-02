@@ -14,31 +14,28 @@ import com.architecture.solution.util.PageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class RecruiterResponseimpl implements RecruiterService {
-
+public class RecruiterServiceImpl implements RecruiterService {
     private final JobRepository jobRepository;
     private final RecruiterRepository recruiterRepository;
+
     @Override
-    public RecruiterResponse getRecruiterByRecruiterId(String recruiterId, int page, int size) {
-        Page<Job> pageJobs = jobRepository.findByRecruiterIdAndStatus(recruiterId, JobStatus.OPEN,PageUtils.getDefaultPageable(size, page));
-        PageResponse<List<JobResponse>>  pageResponse = PageUtils.mapPageJobToPageResponse(pageJobs);
-        Recruiter recruiter = recruiterRepository.findById(recruiterId).orElseThrow(() -> new ResourceNotFoundException("Can not found this recruiter id"));
-        RecruiterResponse recruiterResponse = RecruiterResponse.builder()
+    public RecruiterResponse getRecruiterById(String recruiterId, int page, int size) {
+        Recruiter recruiter = recruiterRepository.findByUserIdAndIsDeletedFalse(recruiterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Can not found this recruiter id"));
+        Page<Job> pageJobs = jobRepository.findByRecruiterIdAndStatusAndIsDeletedFalse(recruiterId,
+                JobStatus.OPEN, PageUtils.getDefaultPageable(size, page));
+        PageResponse<List<JobResponse>> pageResponse = PageUtils.mapPageJobToPageResponse(pageJobs);
+        return RecruiterResponse.builder()
                 .userId(recruiter.getUserId())
                 .companyName((recruiter.getCompanyName()))
-                .createAt(recruiter.getCreatedAt())
-                .pageResponse(pageResponse).build();
-        return  recruiterResponse;
+                .createdAt(recruiter.getCreatedAt())
+                .jobs(pageResponse).build();
     }
-
-
 }

@@ -136,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
         if (!TokenType.REFRESH.name().equals(jwtUtil.extractType(claims))) {
             throw new InvalidArgumentException("Invalid token type");
         }
-        User user = userRepository.findByRefreshToken(refreshToken)
+        User user = userRepository.findByRefreshTokenAndIsDeletedFalse(refreshToken)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
         if (!jwtUtil.validateToken(claims, user.getUsername())) {
             throw new InvalidArgumentException("Invalid refresh token");

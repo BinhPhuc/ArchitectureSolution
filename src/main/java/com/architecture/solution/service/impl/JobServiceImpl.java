@@ -24,7 +24,7 @@ public class JobServiceImpl implements JobService {
     private final JobRepository jobRepository;
 
     public JobResponse getJobById(String jobId) {
-        Job job = jobRepository.findById(jobId).orElseThrow(() -> new ResourceNotFoundException(
+        Job job = jobRepository.findByIdAndIsDeletedFalse(jobId).orElseThrow(() -> new ResourceNotFoundException(
                 "Can not find this job"));
         return JobResponse.builder()
                 .id(job.getId())
@@ -48,7 +48,7 @@ public class JobServiceImpl implements JobService {
 
     public PageResponse<List<JobResponse>> findByRecruiterId(String recruiterId, int page,
                                                              int size) {
-        Page<Job> pageJob = jobRepository.findByRecruiterId(recruiterId,
+        Page<Job> pageJob = jobRepository.findByRecruiterIdAndIsDeletedFalse(recruiterId,
                 PageUtils.getDefaultPageable(size, page));
         return PageUtils.mapPageJobToPageResponse(pageJob);
     }
