@@ -1,8 +1,10 @@
 package com.architecture.solution.filter;
 
+import com.architecture.solution.enums.AuthErrorType;
 import com.architecture.solution.enums.TokenType;
 import com.architecture.solution.util.JwtUtils;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -39,36 +41,53 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         try {
-            authenticate(request, authHeader.substring(7));
-        } catch (JwtException | UsernameNotFoundException ex) {
-            log.debug("Rejected JWT for {}: {}", request.getRequestURI(), ex.getMessage());
-            SecurityContextHolder.clearContext();
+            if (!authenticate(request, authHeader.substring(7))) {
+                rejectToken(request, AuthErrorType.TOKEN_INVALID, "Token type or subject " +
+                        "mismatch");
+            }
+        } catch (ExpiredJwtException ex) {
+            rejectToken(request, AuthErrorType.TOKEN_EXPIRED, ex.getMessage());
+        } catch (JwtException | IllegalArgumentException | UsernameNotFoundException ex) {
+            rejectToken(request, AuthErrorType.TOKEN_INVALID, ex.getMessage());
         }
 
         filterChain.doFilter(request, response);
     }
 
-    private void authenticate(HttpServletRequest request, String token) {
-        // TODO: we are facing to problem that make 2 queries per authentication phase to the database
-        // SOLUTION: the solution could be is store role and userId, username in the token and then extract them from the token instead of querying the database
+
+    private boolean authenticate(HttpServletRequest request, String token) {
+        // TODO: we are facing to problem that make 2 queries per authentication phase to the
+        //  database
+        // SOLUTION: the solution could be is store role and userId, username in the token and
+        // then extract them from the token instead of querying the database
         final Claims claims = jwtUtil.extractAllClaims(token);
         if (!TokenType.ACCESS.name().equals(jwtUtil.extractType(claims))) {
-            return;
+            return false;
         }
 
         final String username = jwtUtil.extractUsername(claims);
-        if (username == null || SecurityContextHolder.getContext().getAuthentication() != null) {
-            return;
+        if (username == null) {
+            return false;
+        }
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            return true;
         }
 
         UserDetails user = userDetailsService.loadUserByUsername(username);
         if (!jwtUtil.validateToken(claims, user.getUsername())) {
-            return;
+            return false;
         }
 
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
+        return true;
+    }
+
+    private void rejectToken(HttpServletRequest request, AuthErrorType errorType, String reason) {
+        log.debug("Rejected JWT for {}: {}", request.getRequestURI(), reason);
+        SecurityContextHolder.clearContext();
+        request.setAttribute(AuthErrorType.REQUEST_ATTRIBUTE, errorType);
     }
 }

@@ -18,8 +18,8 @@ public class Candidate extends BaseEntity {
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
-    @Column(name = "cv_url")
-    private String cvUrl;
+    @Column(name = "cv_file_id")
+    private String cvFileId;
 
     @Column(name = "phone")
     private String phone;
