@@ -3,7 +3,7 @@ package com.architecture.solution.controller;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.ErrorResponse;
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.response.JobResponse;
+import com.architecture.solution.dto.job.response.JobResponse;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
 import com.architecture.solution.service.JobService;
@@ -53,22 +53,6 @@ public class JobController {
                                                                                    @RequestParam(name = "status", required = false) JobStatus status) {
         PageResponse<List<JobResponse>> pageResponse = jobService.searchJobs(title, jobType,
                 status, page, size);
-        return ResponseEntity.ok(ApiResponse.success(pageResponse));
-    }
-
-    // TODO: move this method to RecruiterController later
-    @Operation(summary = "Get jobs by recruiterID", description = "Retrieve jobs by recruited id")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
-            description = "Jobs of the recruiter")
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
-            description = "Invalid page or size",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
-    @GetMapping("/recruiter-id/{recruiterId}")
-    public ResponseEntity<ApiResponse<PageResponse<List<JobResponse>>>> getJobsByRecruiterId(@RequestParam(name = "page", defaultValue = "1") int page,
-                                                                                             @RequestParam(name = "size", defaultValue = "10") int size,
-                                                                                             @PathVariable String recruiterId) {
-        PageResponse<List<JobResponse>> pageResponse = jobService.findByRecruiterId(recruiterId,
-                page, size);
         return ResponseEntity.ok(ApiResponse.success(pageResponse));
     }
 }

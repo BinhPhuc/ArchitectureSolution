@@ -1,14 +1,14 @@
 package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.response.JobResponse;
+import com.architecture.solution.dto.job.response.JobResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.JobRepository;
 import com.architecture.solution.service.JobService;
-import com.architecture.solution.util.PageResponseUtil;
+import com.architecture.solution.util.PageUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -24,7 +24,7 @@ public class JobServiceImpl implements JobService {
     private final JobRepository jobRepository;
 
     public JobResponse getJobById(String jobId) {
-        Job job = jobRepository.findById(jobId).orElseThrow(() -> new ResourceNotFoundException(
+        Job job = jobRepository.findByIdAndIsDeletedFalse(jobId).orElseThrow(() -> new ResourceNotFoundException(
                 "Can not find this job"));
         return JobResponse.builder()
                 .id(job.getId())
@@ -42,14 +42,14 @@ public class JobServiceImpl implements JobService {
                                                       int page, int size) {
         String titleFilter = StringUtils.hasText(title) ? title.trim() : null;
         Page<Job> pageJob = jobRepository.search(titleFilter, jobType, status,
-                PageResponseUtil.getDefaultPageable(size, page));
-        return PageResponseUtil.mapPageJobToPageResponse(pageJob);
+                PageUtils.getDefaultPageable(size, page));
+        return PageUtils.mapPageJobToPageResponse(pageJob);
     }
 
     public PageResponse<List<JobResponse>> findByRecruiterId(String recruiterId, int page,
                                                              int size) {
-        Page<Job> pageJob = jobRepository.findByRecruiterId(recruiterId,
-                PageResponseUtil.getDefaultPageable(size, page));
-        return PageResponseUtil.mapPageJobToPageResponse(pageJob);
+        Page<Job> pageJob = jobRepository.findByRecruiterIdAndIsDeletedFalse(recruiterId,
+                PageUtils.getDefaultPageable(size, page));
+        return PageUtils.mapPageJobToPageResponse(pageJob);
     }
 }

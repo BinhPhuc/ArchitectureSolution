@@ -1,16 +1,16 @@
 package com.architecture.solution.service.impl;
 
-import com.architecture.solution.dto.request.RefreshTokenRequest;
-import com.architecture.solution.dto.response.LoginResponse;
-import com.architecture.solution.dto.response.TokenResponse;
+import com.architecture.solution.dto.auth.request.RefreshTokenRequest;
+import com.architecture.solution.dto.auth.response.LoginResponse;
+import com.architecture.solution.dto.auth.response.TokenResponse;
 import com.architecture.solution.entity.*;
 import com.architecture.solution.enums.RoleName;
 import com.architecture.solution.enums.TokenType;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.*;
-import com.architecture.solution.util.JwtUtil;
-import com.architecture.solution.dto.request.LoginRequest;
-import com.architecture.solution.dto.request.RegisterRequest;
+import com.architecture.solution.util.JwtUtils;
+import com.architecture.solution.dto.auth.request.LoginRequest;
+import com.architecture.solution.dto.auth.request.RegisterRequest;
 import com.architecture.solution.exception.InvalidArgumentException;
 import com.architecture.solution.exception.ResourceExistsException;
 import com.architecture.solution.security.CustomUserDetails;
@@ -38,7 +38,7 @@ public class AuthServiceImpl implements AuthService {
     private final RecruiterRepository recruiterRepository;
 
     private final AuthenticationManager authenticationManager;
-    private final JwtUtil jwtUtil;
+    private final JwtUtils jwtUtil;
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -136,7 +136,7 @@ public class AuthServiceImpl implements AuthService {
         if (!TokenType.REFRESH.name().equals(jwtUtil.extractType(claims))) {
             throw new InvalidArgumentException("Invalid token type");
         }
-        User user = userRepository.findByRefreshToken(refreshToken)
+        User user = userRepository.findByRefreshTokenAndIsDeletedFalse(refreshToken)
                 .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
         if (!jwtUtil.validateToken(claims, user.getUsername())) {
             throw new InvalidArgumentException("Invalid refresh token");

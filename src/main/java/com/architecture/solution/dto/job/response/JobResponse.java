@@ -1,4 +1,4 @@
-package com.architecture.solution.dto.response;
+package com.architecture.solution.dto.job.response;
 
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
