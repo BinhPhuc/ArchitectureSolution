@@ -61,6 +61,23 @@ public class JobController {
         return ResponseEntity.ok(ApiResponse.success(pageResponse));
     }
 
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+            description = "Application submitted with status PENDING")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
+            description = "CV is not a valid PDF or candidate has already applied for this job",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401",
+            description = "Missing or invalid access token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403",
+            description = "User is not a candidate",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404",
+            description = "Job not found, deleted or not open, or candidate not found",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409",
+            description = "Concurrent duplicate application rejected by database constraint",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @PreAuthorize("hasRole('CANDIDATE')")
     @PostMapping("/{jobId}/application")
     public ResponseEntity<ApiResponse<ApplyJobResponse>> applyForJob(
