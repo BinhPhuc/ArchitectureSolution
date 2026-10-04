@@ -54,14 +54,14 @@ public class JobServiceImpl implements JobService {
                                                             int page, int size) {
         String titleFilter = StringUtils.hasText(title) ? title.trim() : null;
         Page<Job> pageJob = jobRepository.search(titleFilter, jobType, status,
-                PageUtils.getDefaultPageable(size, page));
+                PageUtils.getDefaultPageable(page, size));
         return PageUtils.mapPageJobToPageResponse(pageJob);
     }
 
     public PageResponse<List<SearchJobResponse>> findByRecruiterId(String recruiterId, int page,
                                                                    int size) {
         Page<Job> pageJob = jobRepository.findByRecruiterIdAndIsDeletedFalse(recruiterId,
-                PageUtils.getDefaultPageable(size, page));
+                PageUtils.getDefaultPageable(page, size));
         return PageUtils.mapPageJobToPageResponse(pageJob);
     }
 

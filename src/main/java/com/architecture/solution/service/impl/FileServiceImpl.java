@@ -31,7 +31,7 @@ public class FileServiceImpl implements FileService {
     @Transactional
     public FileUploadResponse uploadCV(MultipartFile file, boolean applyJob) {
         String userId = SecurityUtils.getUserId();
-        Candidate candidate = candidateRepository.findByIdAndIsDeletedFalse(userId)
+        Candidate candidate = candidateRepository.findByUserIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
         FileUtils.validatePdf(file);
         String originalFilename = file.getOriginalFilename();
