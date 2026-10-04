@@ -1,6 +1,7 @@
 package com.architecture.solution.controller;
 
 import com.architecture.solution.dto.common.ApiResponse;
+import com.architecture.solution.dto.user.request.ChangePasswordRequest;
 import com.architecture.solution.dto.user.request.UpdateUserProfileRequest;
 import com.architecture.solution.dto.user.response.UpdateUserProfileResponse;
 import com.architecture.solution.dto.user.response.UserProfileResponse;
@@ -34,5 +35,12 @@ public class UserController {
             @Valid @RequestBody UpdateUserProfileRequest request) {
         UpdateUserProfileResponse response = userService.updateUserProfile(request);
         return ResponseEntity.ok(ApiResponse.success(response, "User profile updated successfully"));
+    }
+
+    @Operation(summary = "Change password", description = "Change the password of the authenticated user.")
+    @PutMapping("/me/password")
+    public ResponseEntity<ApiResponse> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(request);
+        return ResponseEntity.ok(ApiResponse.success(null, "Password changed successfully"));
     }
 }

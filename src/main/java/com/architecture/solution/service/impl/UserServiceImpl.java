@@ -3,6 +3,7 @@ package com.architecture.solution.service.impl;
 import com.architecture.solution.dto.ProfileResponse;
 import com.architecture.solution.dto.candidate.response.CandidateProfileResponse;
 import com.architecture.solution.dto.recruiter.response.RecruiterProfileResponse;
+import com.architecture.solution.dto.user.request.ChangePasswordRequest;
 import com.architecture.solution.dto.user.request.UpdateUserProfileRequest;
 import com.architecture.solution.dto.user.response.UpdateUserProfileResponse;
 import com.architecture.solution.dto.user.response.UserProfileResponse;
@@ -17,6 +18,7 @@ import com.architecture.solution.service.UserService;
 import com.architecture.solution.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -28,6 +30,8 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
     private final RecruiterRepository recruiterRepository;
+
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserProfileResponse getUserProfile() {
@@ -76,5 +80,19 @@ public class UserServiceImpl implements UserService {
                 .displayedName(user.getDisplayedName())
                 .lastModifiedAt(user.getLastModifiedAt())
                 .build();
+    }
+
+    @Override
+    public void changePassword(ChangePasswordRequest request) {
+        User user = SecurityUtils.getUser();
+
+        String newPassword = request.getNewPassword();
+        String retypePassword = request.getRetypeNewPassword();
+        if (!newPassword.equals(retypePassword)) {
+            throw new IllegalArgumentException("Passwords do not match");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 }
