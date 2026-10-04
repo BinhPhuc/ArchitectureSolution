@@ -29,9 +29,9 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    public FileUploadResponse uploadCV(MultipartFile file) {
+    public FileUploadResponse uploadCV(MultipartFile file, boolean applyJob) {
         String userId = SecurityUtils.getUserId();
-        Candidate candidate = candidateRepository.findById(userId)
+        Candidate candidate = candidateRepository.findByIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
         FileUtils.validatePdf(file);
         String originalFilename = file.getOriginalFilename();
@@ -51,8 +51,10 @@ public class FileServiceImpl implements FileService {
                 .build();
         fileRepository.save(newFile);
         String cvFileId = newFile.getId();
-        candidate.setCvFileId(cvFileId);
-        candidateRepository.save(candidate);
+        if (!applyJob) {
+            candidate.setCvFileId(cvFileId);
+            candidateRepository.save(candidate);
+        }
         return FileUploadResponse
                 .builder()
                 .id(cvFileId)

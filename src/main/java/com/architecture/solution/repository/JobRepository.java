@@ -31,4 +31,6 @@ public interface JobRepository extends JpaRepository<Job, String> {
                      @Param("jobType") JobType jobType,
                      @Param("status") JobStatus status,
                      Pageable pageable);
+
+    boolean existsByIdAndStatusAndIsDeletedFalse(String id, JobStatus status);
 }

@@ -27,7 +27,7 @@ public class FileController {
     @PreAuthorize("hasRole('CANDIDATE')")
     @PostMapping("/upload/cv")
     public ResponseEntity<ApiResponse<FileUploadResponse>> uploadCV(@RequestParam("file") MultipartFile file) {
-        FileUploadResponse response = fileService.uploadCV(file);
+        FileUploadResponse response = fileService.uploadCV(file, false);
         return ResponseEntity.ok(ApiResponse.success(response, "File uploaded successfully"));
     }
 }

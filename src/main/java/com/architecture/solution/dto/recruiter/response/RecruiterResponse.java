@@ -1,7 +1,7 @@
 package com.architecture.solution.dto.recruiter.response;
 
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.job.response.JobResponse;
+import com.architecture.solution.dto.job.response.SearchJobResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -21,5 +21,5 @@ public class RecruiterResponse {
     @JsonProperty("created_at")
     private Instant createdAt;
     @JsonProperty("jobs")
-    private PageResponse<List<JobResponse>> jobs;
+    private PageResponse<List<SearchJobResponse>> jobs;
 }

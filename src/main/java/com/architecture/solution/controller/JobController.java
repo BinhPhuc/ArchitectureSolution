@@ -3,7 +3,8 @@ package com.architecture.solution.controller;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.ErrorResponse;
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.job.response.JobResponse;
+import com.architecture.solution.dto.job.response.ApplyJobResponse;
+import com.architecture.solution.dto.job.response.SearchJobResponse;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
 import com.architecture.solution.service.JobService;
@@ -14,7 +15,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -33,8 +36,8 @@ public class JobController {
             "Job not found or deleted",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @GetMapping("/{jobId}")
-    public ResponseEntity<ApiResponse<JobResponse>> getJobByID(@PathVariable String jobId) {
-        JobResponse jobResponse = jobService.getJobById(jobId);
+    public ResponseEntity<ApiResponse<SearchJobResponse>> getJobByID(@PathVariable String jobId) {
+        SearchJobResponse jobResponse = jobService.getJobById(jobId);
         return ResponseEntity.ok(ApiResponse.success(jobResponse));
     }
 
@@ -46,13 +49,42 @@ public class JobController {
             description = "Invalid page, size, jobType or status",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     @GetMapping("")
-    public ResponseEntity<ApiResponse<PageResponse<List<JobResponse>>>> searchJobs(@RequestParam(name = "page", defaultValue = "1") int page,
-                                                                                   @RequestParam(name = "size", defaultValue = "10") int size,
-                                                                                   @RequestParam(name = "title", required = false) String title,
-                                                                                   @RequestParam(name = "jobType", required = false) JobType jobType,
-                                                                                   @RequestParam(name = "status", required = false) JobStatus status) {
-        PageResponse<List<JobResponse>> pageResponse = jobService.searchJobs(title, jobType,
+    public ResponseEntity<ApiResponse<PageResponse<List<SearchJobResponse>>>> searchJobs(
+            @RequestParam(name = "page", defaultValue = "1") int page,
+            @RequestParam(name = "size", defaultValue = "10") int size,
+            @RequestParam(name = "title", required = false) String title,
+            @RequestParam(name = "jobType", required = false) JobType jobType,
+            @RequestParam(name = "status", required = false) JobStatus status
+    ) {
+        PageResponse<List<SearchJobResponse>> pageResponse = jobService.searchJobs(title, jobType,
                 status, page, size);
         return ResponseEntity.ok(ApiResponse.success(pageResponse));
+    }
+
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200",
+            description = "Application submitted with status PENDING")
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "400",
+            description = "CV is not a valid PDF or candidate has already applied for this job",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "401",
+            description = "Missing or invalid access token",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403",
+            description = "User is not a candidate",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404",
+            description = "Job not found, deleted or not open, or candidate not found",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "409",
+            description = "Concurrent duplicate application rejected by database constraint",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
+    @PreAuthorize("hasRole('CANDIDATE')")
+    @PostMapping("/{jobId}/application")
+    public ResponseEntity<ApiResponse<ApplyJobResponse>> applyForJob(
+            @PathVariable String jobId,
+            @RequestParam("cv") MultipartFile cv
+    ) {
+        ApplyJobResponse response = jobService.applyForJob(jobId, cv);
+        return ResponseEntity.ok(ApiResponse.success(response, "Application submitted successfully"));
     }
 }
