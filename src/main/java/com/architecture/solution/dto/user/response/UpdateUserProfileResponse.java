@@ -1,16 +1,18 @@
 package com.architecture.solution.dto.user.response;
 
-import com.architecture.solution.dto.ProfileResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+
+import java.time.Instant;
 
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserProfileResponse {
+public class UpdateUserProfileResponse {
     private String id;
+
     private String email;
 
     private String username;
@@ -18,5 +20,6 @@ public class UserProfileResponse {
     @JsonProperty("displayed_name")
     private String displayedName;
 
-    private ProfileResponse profiles;
+    @JsonProperty("last_modified_at")
+    private Instant lastModifiedAt;
 }

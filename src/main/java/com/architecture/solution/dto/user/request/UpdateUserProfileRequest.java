@@ -1,7 +1,7 @@
-package com.architecture.solution.dto.user.response;
+package com.architecture.solution.dto.user.request;
 
-import com.architecture.solution.dto.ProfileResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
 @Builder
@@ -9,14 +9,11 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserProfileResponse {
-    private String id;
+public class UpdateUserProfileRequest {
+    @NotBlank
     private String email;
 
-    private String username;
-
+    @NotBlank
     @JsonProperty("displayed_name")
     private String displayedName;
-
-    private ProfileResponse profiles;
 }
