@@ -1,6 +1,6 @@
 package com.architecture.solution.service.impl;
 
-import com.architecture.solution.dto.user.response.UserResponse;
+import com.architecture.solution.dto.user.response.UserProfileResponse;
 import com.architecture.solution.entity.User;
 import com.architecture.solution.repository.UserRepository;
 import com.architecture.solution.service.UserService;
@@ -16,10 +16,10 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public UserResponse getUserProfile() {
+    public UserProfileResponse getUserProfile() {
         User user = SecurityUtils.getUser();
 
-        return UserResponse.builder()
+        return UserProfileResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())
                 .username(user.getUsername())
