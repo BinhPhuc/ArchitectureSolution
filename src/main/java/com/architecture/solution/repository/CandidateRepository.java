@@ -8,5 +8,5 @@ import java.util.Optional;
 
 @Repository
 public interface CandidateRepository extends JpaRepository<Candidate, String> {
-    Optional<Candidate> findByIdAndIsDeletedFalse(String id);
+    Optional<Candidate> findByUserIdAndIsDeletedFalse(String userId);
 }

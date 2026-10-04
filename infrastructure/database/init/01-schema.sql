@@ -10,8 +10,8 @@ CREATE TABLE `users` (
   `displayed_name` varchar(255),
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
@@ -20,8 +20,8 @@ CREATE TABLE `roles` (
   `name` ENUM ('ADMIN', 'RECRUITER', 'CANDIDATE') UNIQUE NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
@@ -31,8 +31,8 @@ CREATE TABLE `user_roles` (
   `role_id` varchar(36) NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
@@ -41,8 +41,8 @@ CREATE TABLE `recruiters` (
   `company_name` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
@@ -57,8 +57,8 @@ CREATE TABLE `files` (
   `owner_id` varchar(36) NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
@@ -69,8 +69,8 @@ CREATE TABLE `candidates` (
   `phone` varchar(255),
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
@@ -85,8 +85,8 @@ CREATE TABLE `jobs` (
   `job_type` ENUM ('PART_TIME', 'FULL_TIME') NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false,
   CHECK ((salary_min IS NULL AND salary_max IS NULL) OR (salary_min IS NOT NULL
         AND salary_max IS NOT NULL
@@ -102,8 +102,8 @@ CREATE TABLE `job_applications` (
   `cv_file_id` varchar(36) NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
@@ -112,8 +112,8 @@ CREATE TABLE `categories` (
   `name` varchar(255) UNIQUE NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
@@ -123,8 +123,8 @@ CREATE TABLE `job_categories` (
   `category_id` varchar(36) NOT NULL,
   `created_at` timestamp NOT NULL,
   `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp,
-  `last_modified_by` varchar(36),
+  `last_modified_at` timestamp NOT NULL,
+  `last_modified_by` varchar(36) NOT NULL,
   `is_deleted` boolean NOT NULL DEFAULT false
 );
 
