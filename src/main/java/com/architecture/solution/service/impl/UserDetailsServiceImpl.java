@@ -27,9 +27,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
         List<GrantedAuthority> authorities =
                 userRoleRepository.findRoleNamesByUserId(user.getId()).stream()
-                .map(roleName -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + roleName.name()))
-                .toList();
+                        .map(roleName -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + roleName.name()))
+                        .toList();
 
-        return new CustomUserDetails(user, authorities);
+        return CustomUserDetails.builder()
+                .user(user)
+                .authorities(authorities)
+                .build();
     }
 }

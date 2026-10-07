@@ -1,6 +1,7 @@
 package com.architecture.solution.security;
 
 import com.architecture.solution.entity.User;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -10,6 +11,7 @@ import java.util.Collection;
 
 @Getter
 @RequiredArgsConstructor
+@Builder
 public class CustomUserDetails implements UserDetails {
     private final User user;
     private final Collection<? extends GrantedAuthority> authorities;
