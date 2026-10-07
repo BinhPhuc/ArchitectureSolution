@@ -2,6 +2,7 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.file.response.FileUploadResponse;
+import com.architecture.solution.dto.job.request.UpdateJobStatusRequest;
 import com.architecture.solution.dto.job.response.ApplyJobResponse;
 import com.architecture.solution.dto.job.response.GetJobResponse;
 import com.architecture.solution.entity.Job;
@@ -90,6 +91,24 @@ public class JobServiceImpl implements JobService {
                 .cvFileId(cvFileId)
                 .status(ApplicationStatus.PENDING)
                 .candidateId(candidateId)
+                .build();
+    }
+
+    @Override
+    public GetJobResponse updateJobStatus(String jobId, UpdateJobStatusRequest request) {
+        Job job = jobRepository.findByIdAndIsDeletedFalse(jobId).orElseThrow(() -> new ResourceNotFoundException("Can not find " +
+                "this job"));
+        job.setStatus(JobStatus.valueOf(request.getStatus()));
+        jobRepository.save(job);
+        return GetJobResponse.builder()
+                .id(job.getId())
+                .jobType(job.getJobType())
+                .title(job.getTitle())
+                .description(job.getDescription())
+                .recruiterId(job.getRecruiterId())
+                .salaryMax(job.getSalaryMax())
+                .salaryMin(job.getSalaryMin())
+                .status(job.getStatus())
                 .build();
     }
 }

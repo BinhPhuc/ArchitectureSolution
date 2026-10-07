@@ -9,6 +9,7 @@ import com.architecture.solution.dto.job.response.GetJobResponse;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
 import com.architecture.solution.service.JobService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -61,8 +62,9 @@ public class JobController implements JobApi {
     @PostMapping("/{jobId}/status")
     public ResponseEntity<ApiResponse<GetJobResponse>> updateJobStatus(
             @PathVariable String jobId,
-            @RequestBody UpdateJobStatusRequest request
+            @Valid @RequestBody UpdateJobStatusRequest request
     ) {
-        return null;
+        GetJobResponse response = jobService.updateJobStatus(jobId, request);
+        return ResponseEntity.ok(ApiResponse.success(response));
     }
 }

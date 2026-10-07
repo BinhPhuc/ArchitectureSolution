@@ -1,7 +1,8 @@
 package com.architecture.solution.dto.job.request;
 
+import com.architecture.solution.annotation.ValueOfEnum;
 import com.architecture.solution.enums.JobStatus;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Builder
@@ -10,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateJobStatusRequest {
-    @JsonProperty("status")
-    private JobStatus jobStatus;
+    @ValueOfEnum(enumClass = JobStatus.class)
+    @NotNull
+    private String status;
 }
