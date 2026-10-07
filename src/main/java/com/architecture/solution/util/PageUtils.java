@@ -2,7 +2,7 @@ package com.architecture.solution.util;
 
 import com.architecture.solution.dto.candidate.response.GetApplicationResponse;
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.job.response.SearchJobResponse;
+import com.architecture.solution.dto.job.response.GetJobResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.exception.InvalidArgumentException;
 import com.architecture.solution.repository.projection.CandidateJobApplication;
@@ -17,9 +17,9 @@ public class PageUtils {
     private PageUtils() {
     }
 
-    public static PageResponse<List<SearchJobResponse>> mapPageJobToPageResponse(Page<Job> pageJob) {
-        Page<SearchJobResponse> pageJobResponse = pageJob.map(job ->
-                SearchJobResponse.builder()
+    public static PageResponse<List<GetJobResponse>> mapPageJobToPageResponse(Page<Job> pageJob) {
+        Page<GetJobResponse> pageJobResponse = pageJob.map(job ->
+                GetJobResponse.builder()
                         .jobType(job.getJobType())
                         .id(job.getId())
                         .description(job.getDescription())
@@ -34,9 +34,9 @@ public class PageUtils {
         int totalPages = pageJobResponse.getTotalPages();
         int pageNum = pageJobResponse.getNumber() + 1;
         int pageSize = pageJobResponse.getSize();
-        List<SearchJobResponse> content = pageJobResponse.getContent();
+        List<GetJobResponse> content = pageJobResponse.getContent();
         return PageResponse.
-                <List<SearchJobResponse>>builder()
+                <List<GetJobResponse>>builder()
                 .totalPage(totalPages)
                 .pageNum(pageNum)
                 .pageSize(pageSize)

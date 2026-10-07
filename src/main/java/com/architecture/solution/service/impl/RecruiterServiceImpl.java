@@ -1,7 +1,7 @@
 package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.job.response.SearchJobResponse;
+import com.architecture.solution.dto.job.response.GetJobResponse;
 import com.architecture.solution.dto.recruiter.response.RecruiterResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.entity.Recruiter;
@@ -31,7 +31,7 @@ public class RecruiterServiceImpl implements RecruiterService {
                 .orElseThrow(() -> new ResourceNotFoundException("Can not found this recruiter id"));
         Page<Job> pageJobs = jobRepository.findByRecruiterIdAndStatusAndIsDeletedFalse(recruiterId,
                 JobStatus.OPEN, PageUtils.getDefaultPageable(page, size));
-        PageResponse<List<SearchJobResponse>> pageResponse = PageUtils.mapPageJobToPageResponse(pageJobs);
+        PageResponse<List<GetJobResponse>> pageResponse = PageUtils.mapPageJobToPageResponse(pageJobs);
         return RecruiterResponse.builder()
                 .userId(recruiter.getUserId())
                 .companyName((recruiter.getCompanyName()))
