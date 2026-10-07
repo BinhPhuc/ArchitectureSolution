@@ -13,7 +13,7 @@ import java.time.Instant;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class JobResponse {
+public class SearchJobResponse {
     @JsonProperty("id")
     private String id;
 

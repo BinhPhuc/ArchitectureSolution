@@ -18,7 +18,7 @@ public class Candidate extends BaseEntity {
     @Column(name = "bio", columnDefinition = "TEXT")
     private String bio;
 
-    @Column(name = "cv_file_id")
+    @Column(name = "cv_file_id", length = 36, unique = true)
     private String cvFileId;
 
     @Column(name = "phone")

@@ -1,9 +1,11 @@
 package com.architecture.solution.util;
 
+import com.architecture.solution.dto.candidate.response.GetApplicationResponse;
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.job.response.JobResponse;
+import com.architecture.solution.dto.job.response.SearchJobResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.exception.InvalidArgumentException;
+import com.architecture.solution.repository.projection.CandidateJobApplication;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,26 +17,26 @@ public class PageUtils {
     private PageUtils() {
     }
 
-    public static PageResponse<List<JobResponse>> mapPageJobToPageResponse(Page<Job> pageJob) {
-        Page<JobResponse> pageJobResponse = pageJob.map(job -> {
-            JobResponse jobResponse = new JobResponse();
-            jobResponse.setJobType(job.getJobType());
-            jobResponse.setId(job.getId());
-            jobResponse.setDescription(job.getDescription());
-            jobResponse.setTitle(job.getTitle());
-            jobResponse.setStatus(job.getStatus());
-            jobResponse.setSalaryMin(job.getSalaryMin());
-            jobResponse.setSalaryMax(job.getSalaryMax());
-            jobResponse.setRecruiterId(job.getRecruiterId());
-            jobResponse.setCreatedAt(job.getCreatedAt());
-            return jobResponse;
-        });
+    public static PageResponse<List<SearchJobResponse>> mapPageJobToPageResponse(Page<Job> pageJob) {
+        Page<SearchJobResponse> pageJobResponse = pageJob.map(job ->
+                SearchJobResponse.builder()
+                        .jobType(job.getJobType())
+                        .id(job.getId())
+                        .description(job.getDescription())
+                        .title(job.getTitle())
+                        .status(job.getStatus())
+                        .salaryMin(job.getSalaryMin())
+                        .salaryMax(job.getSalaryMax())
+                        .recruiterId(job.getRecruiterId())
+                        .createdAt(job.getCreatedAt())
+                        .build()
+        );
         int totalPages = pageJobResponse.getTotalPages();
         int pageNum = pageJobResponse.getNumber() + 1;
         int pageSize = pageJobResponse.getSize();
-        List<JobResponse> content = pageJobResponse.getContent();
+        List<SearchJobResponse> content = pageJobResponse.getContent();
         return PageResponse.
-                <List<JobResponse>>builder()
+                <List<SearchJobResponse>>builder()
                 .totalPage(totalPages)
                 .pageNum(pageNum)
                 .pageSize(pageSize)
@@ -42,7 +44,33 @@ public class PageUtils {
                 .build();
     }
 
-    public static Pageable getDefaultPageable(int size, int page) {
+    public static PageResponse<List<GetApplicationResponse>> mapPageApplicationToPageResponse(Page<CandidateJobApplication> pageApplication) {
+        Page<GetApplicationResponse> pageApplicationResponse = pageApplication.map(application ->
+            GetApplicationResponse
+                    .builder()
+                    .candidateId(application.getCandidateId())
+                    .jobId(application.getJobId())
+                    .title(application.getTitle())
+                    .description(application.getDescription())
+                    .companyName(application.getCompanyName())
+                    .jobType(application.getJobType())
+                    .status(application.getStatus())
+                    .build()
+        );
+        int totalPages = pageApplicationResponse.getTotalPages();
+        int pageNum = pageApplicationResponse.getNumber() + 1;
+        int pageSize = pageApplicationResponse.getSize();
+        List<GetApplicationResponse> content = pageApplicationResponse.getContent();
+        return PageResponse.
+                <List<GetApplicationResponse>>builder()
+                .totalPage(totalPages)
+                .pageNum(pageNum)
+                .pageSize(pageSize)
+                .items(content)
+                .build();
+    }
+
+    public static Pageable getDefaultPageable(int page, int size) {
         if (page < 1) {
             throw new InvalidArgumentException("Page must be greater than or equal to 1");
         }

@@ -36,4 +36,7 @@ public class File extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private FileStatus status = FileStatus.PENDING;
+
+    @Column(name = "owner_id", length = 36, nullable = false)
+    private String ownerId;
 }
