@@ -2,8 +2,9 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.file.response.FileUploadResponse;
+import com.architecture.solution.dto.job.request.UpdateJobStatusRequest;
 import com.architecture.solution.dto.job.response.ApplyJobResponse;
-import com.architecture.solution.dto.job.response.SearchJobResponse;
+import com.architecture.solution.dto.job.response.GetJobResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.entity.JobApplication;
 import com.architecture.solution.enums.ApplicationStatus;
@@ -35,10 +36,10 @@ public class JobServiceImpl implements JobService {
     private final JobApplicationRepository jobApplicationRepository;
     private final FileService fileService;
 
-    public SearchJobResponse getJobById(String jobId) {
+    public GetJobResponse getJobById(String jobId) {
         Job job = jobRepository.findByIdAndIsDeletedFalse(jobId).orElseThrow(() -> new ResourceNotFoundException(
                 "Can not find this job"));
-        return SearchJobResponse.builder()
+        return GetJobResponse.builder()
                 .id(job.getId())
                 .jobType(job.getJobType())
                 .title(job.getTitle())
@@ -50,16 +51,16 @@ public class JobServiceImpl implements JobService {
                 .build();
     }
 
-    public PageResponse<List<SearchJobResponse>> searchJobs(String title, JobType jobType, JobStatus status,
-                                                            int page, int size) {
+    public PageResponse<List<GetJobResponse>> searchJobs(String title, JobType jobType, JobStatus status,
+                                                         int page, int size) {
         String titleFilter = StringUtils.hasText(title) ? title.trim() : null;
         Page<Job> pageJob = jobRepository.search(titleFilter, jobType, status,
                 PageUtils.getDefaultPageable(page, size));
         return PageUtils.mapPageJobToPageResponse(pageJob);
     }
 
-    public PageResponse<List<SearchJobResponse>> findByRecruiterId(String recruiterId, int page,
-                                                                   int size) {
+    public PageResponse<List<GetJobResponse>> findByRecruiterId(String recruiterId, int page,
+                                                                int size) {
         Page<Job> pageJob = jobRepository.findByRecruiterIdAndIsDeletedFalse(recruiterId,
                 PageUtils.getDefaultPageable(page, size));
         return PageUtils.mapPageJobToPageResponse(pageJob);
@@ -90,6 +91,24 @@ public class JobServiceImpl implements JobService {
                 .cvFileId(cvFileId)
                 .status(ApplicationStatus.PENDING)
                 .candidateId(candidateId)
+                .build();
+    }
+
+    @Override
+    public GetJobResponse updateJobStatus(String jobId, UpdateJobStatusRequest request) {
+        Job job = jobRepository.findByIdAndIsDeletedFalse(jobId).orElseThrow(() -> new ResourceNotFoundException("Can not find " +
+                "this job"));
+        job.setStatus(JobStatus.valueOf(request.getStatus()));
+        jobRepository.save(job);
+        return GetJobResponse.builder()
+                .id(job.getId())
+                .jobType(job.getJobType())
+                .title(job.getTitle())
+                .description(job.getDescription())
+                .recruiterId(job.getRecruiterId())
+                .salaryMax(job.getSalaryMax())
+                .salaryMin(job.getSalaryMin())
+                .status(job.getStatus())
                 .build();
     }
 }

@@ -4,7 +4,6 @@ import com.architecture.solution.dto.candidate.request.UpdateCandidateProfileReq
 import com.architecture.solution.dto.candidate.response.GetApplicationResponse;
 import com.architecture.solution.dto.candidate.response.UpdateCandidateProfileResponse;
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.job.response.SearchJobResponse;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.entity.Candidate;
 import com.architecture.solution.repository.CandidateRepository;
