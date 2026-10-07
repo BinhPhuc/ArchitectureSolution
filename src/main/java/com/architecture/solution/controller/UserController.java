@@ -30,16 +30,15 @@ public class UserController {
     }
 
     @Operation(summary = "Update user profile", description = "Update the profile information of the authenticated user.")
-    @PutMapping("/me")
-    public ResponseEntity<ApiResponse<UpdateUserProfileResponse>> updateUserProfile(
-            @Valid @RequestBody UpdateUserProfileRequest request) {
+    @PostMapping("/me")
+    public ResponseEntity<ApiResponse<UpdateUserProfileResponse>> updateUserProfile(@Valid @RequestBody UpdateUserProfileRequest request) {
         UpdateUserProfileResponse response = userService.updateUserProfile(request);
         return ResponseEntity.ok(ApiResponse.success(response, "User profile updated successfully"));
     }
 
     @Operation(summary = "Change password", description = "Change the password of the authenticated user.")
-    @PutMapping("/me/password")
-    public ResponseEntity<ApiResponse> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+    @PostMapping("/me/password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(request);
         return ResponseEntity.ok(ApiResponse.success(null, "Password changed successfully"));
     }

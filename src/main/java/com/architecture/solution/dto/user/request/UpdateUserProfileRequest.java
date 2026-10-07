@@ -10,10 +10,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UpdateUserProfileRequest {
-    @NotBlank
     private String email;
 
-    @NotBlank
     @JsonProperty("displayed_name")
     private String displayedName;
 }

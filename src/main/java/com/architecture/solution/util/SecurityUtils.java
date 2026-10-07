@@ -8,13 +8,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 public class SecurityUtils {
+    private SecurityUtils() {
+    }
+
     public static User getUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             throw new UnauthorizedException("User is not authenticated");
         }
         Object principal = authentication.getPrincipal();
-        if (principal == null || !(principal instanceof CustomUserDetails)) {
+        if (!(principal instanceof CustomUserDetails)) {
             throw new UnauthorizedException("User details are not available");
         }
         User user = ((CustomUserDetails) principal).getUser();

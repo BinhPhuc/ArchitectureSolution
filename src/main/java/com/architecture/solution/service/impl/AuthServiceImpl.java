@@ -107,7 +107,13 @@ public class AuthServiceImpl implements AuthService {
                         loginRequest.getPassword()
                 )
         );
-        User user = ((CustomUserDetails) authentication.getPrincipal()).getUser();
+
+        Object principal = authentication.getPrincipal();
+        if (principal == null) {
+            throw new InvalidArgumentException("Invalid username or password");
+        }
+
+        User user = ((CustomUserDetails) principal).getUser();
 
         String accessToken = jwtUtil.generateAccessToken(user);
         String refreshToken = jwtUtil.generateRefreshToken(user, null);

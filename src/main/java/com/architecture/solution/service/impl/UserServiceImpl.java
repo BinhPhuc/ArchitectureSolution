@@ -14,12 +14,14 @@ import com.architecture.solution.exception.ResourceExistsException;
 import com.architecture.solution.repository.CandidateRepository;
 import com.architecture.solution.repository.RecruiterRepository;
 import com.architecture.solution.repository.UserRepository;
+import com.architecture.solution.service.AuthService;
 import com.architecture.solution.service.UserService;
 import com.architecture.solution.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.Optional;
 
@@ -30,7 +32,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
     private final RecruiterRepository recruiterRepository;
-
     private final PasswordEncoder passwordEncoder;
 
     @Override
@@ -38,14 +39,15 @@ public class UserServiceImpl implements UserService {
         User user = SecurityUtils.getUser();
 
         Optional<Candidate> candidate = candidateRepository.findByUserIdAndIsDeletedFalse(user.getId());
-        CandidateProfileResponse candidateProfileResponse = candidate.isPresent() ? CandidateProfileResponse.builder()
-                .bio(candidate.get().getBio())
-                .phone(candidate.get().getPhone())
-                .build() : null;
+        CandidateProfileResponse candidateProfileResponse = candidate.map(value -> CandidateProfileResponse.builder()
+                .bio(value.getBio())
+                .phone(value.getPhone())
+                .build()).orElse(null);
         Optional<Recruiter> recruiter = recruiterRepository.findByUserIdAndIsDeletedFalse(user.getId());
-        RecruiterProfileResponse recruiterProfileResponse = recruiter.isPresent() ? RecruiterProfileResponse.builder()
-                .companyName(recruiter.get().getCompanyName())
-                .build() : null;
+        RecruiterProfileResponse recruiterProfileResponse = recruiter.map(value -> RecruiterProfileResponse.builder()
+                .companyName(value.getCompanyName())
+                .build()).orElse(null);
+
         ProfileResponse profileResponse = ProfileResponse.builder()
                 .candidateProfile(candidateProfileResponse)
                 .recruiterProfile(recruiterProfileResponse)
@@ -62,17 +64,24 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UpdateUserProfileResponse updateUserProfile(UpdateUserProfileRequest request) {
+        boolean needPersist = false;
         User user = SecurityUtils.getUser();
-
         String newEmail = request.getEmail();
-        if (!newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
-            throw new ResourceExistsException("User with email " + newEmail + " already exists");
+        if (StringUtils.hasText(newEmail)) {
+            if (!newEmail.equals(user.getEmail()) && userRepository.existsByEmail(newEmail)) {
+                throw new ResourceExistsException("User with email " + newEmail + " already exists");
+            }
+            user.setEmail(request.getEmail());
+            needPersist = true;
         }
-
-        user.setEmail(request.getEmail());
-        user.setDisplayedName(request.getDisplayedName());
-        userRepository.save(user);
-
+        String displayedName = request.getDisplayedName();
+        if (StringUtils.hasText(displayedName)) {
+            user.setDisplayedName(displayedName);
+            needPersist = true;
+        }
+        if (needPersist) {
+            userRepository.save(user);
+        }
         return UpdateUserProfileResponse.builder()
                 .id(user.getId())
                 .email(user.getEmail())

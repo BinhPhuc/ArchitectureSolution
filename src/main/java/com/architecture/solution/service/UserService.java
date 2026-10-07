@@ -7,6 +7,8 @@ import com.architecture.solution.dto.user.response.UserProfileResponse;
 
 public interface UserService {
     UserProfileResponse getUserProfile();
+
     UpdateUserProfileResponse updateUserProfile(UpdateUserProfileRequest request);
+
     void changePassword(ChangePasswordRequest request);
 }

@@ -10,7 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class RefreshTokenRequest {
-
     @NotBlank
     @JsonProperty("refresh_token")
     private String refreshToken;
