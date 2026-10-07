@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, String> {
     boolean existsByJobIdAndCandidateId(String jobId, String candidateId);
@@ -22,4 +24,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
                 where ja.isDeleted = false and j.isDeleted = false and r.isDeleted = false and ja.candidateId = :id
             """)
     Page<CandidateJobApplication> getJobApplicationById(String id, Pageable pageable);
+
+    List<JobApplication> findByJobIdAndIsDeletedFalse(String jobId);
 }

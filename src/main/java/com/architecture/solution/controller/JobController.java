@@ -67,4 +67,12 @@ public class JobController implements JobApi {
         GetJobResponse response = jobService.updateJobStatus(jobId, request);
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    @Override
+    @PreAuthorize("hasRole('RECRUITER')")
+    @DeleteMapping("/{jobId}")
+    public ResponseEntity<ApiResponse<Void>> deleteJob(@PathVariable String jobId) {
+        jobService.deleteJob(jobId);
+        return ResponseEntity.ok(ApiResponse.success(null, "Job deleted successfully"));
+    }
 }
