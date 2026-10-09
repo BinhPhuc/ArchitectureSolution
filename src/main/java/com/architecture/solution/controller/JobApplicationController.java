@@ -5,6 +5,7 @@ import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.jobapplication.ApplyJobResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;
+import com.architecture.solution.dto.jobapplication.GetJobApplicationDetailResponse;
 import com.architecture.solution.service.JobApplicationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,5 +44,15 @@ public class JobApplicationController implements JobApplicationApi {
     ) {
         PageResponse<List<GetJobApplicationByJobIdResponse>> response = jobApplicationService.getJobApplications(jobId, page, size);
         return ResponseEntity.ok(ApiResponse.success(response, "Job applications retrieved successfully"));
+    }
+
+    @Override
+    @PreAuthorize("hasRole('RECRUITER')")
+    @GetMapping("/applications/{applicationId}")
+    public ResponseEntity<ApiResponse<GetJobApplicationDetailResponse>> getJobApplicationDetail(
+            @PathVariable String applicationId
+    ) {
+        GetJobApplicationDetailResponse response = jobApplicationService.getJobApplicationDetail(applicationId);
+        return ResponseEntity.ok(ApiResponse.success(response, "Job application retrieved successfully"));
     }
 }

@@ -5,6 +5,7 @@ import com.architecture.solution.dto.file.response.FileUploadResponse;
 import com.architecture.solution.dto.jobapplication.ApplyJobResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;
+import com.architecture.solution.dto.jobapplication.GetJobApplicationDetailResponse;
 import com.architecture.solution.entity.JobApplication;
 import com.architecture.solution.enums.ApplicationStatus;
 import com.architecture.solution.enums.JobStatus;
@@ -14,6 +15,7 @@ import com.architecture.solution.repository.JobApplicationRepository;
 import com.architecture.solution.repository.JobRepository;
 import com.architecture.solution.repository.projection.JobApplicationByCandidateId;
 import com.architecture.solution.repository.projection.JobApplicationByJobId;
+import com.architecture.solution.repository.projection.JobApplicationDetail;
 import com.architecture.solution.validator.JobOwnershipValidator;
 import com.architecture.solution.service.FileService;
 import com.architecture.solution.service.JobApplicationService;
@@ -71,6 +73,29 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         Page<JobApplicationByJobId> applications = jobApplicationRepository.findJobApplicationByJobId(jobId,
                 PageUtils.getDefaultPageable(page, size));
         return PageUtils.mapPageJobApplicationByJobIdToPageResponse(applications);
+    }
+
+    @Override
+    public GetJobApplicationDetailResponse getJobApplicationDetail(String applicationId) {
+        JobApplication application = jobApplicationRepository.findByIdAndIsDeletedFalse(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job application not found"));
+        jobOwnershipValidator.getOwnedJob(application.getJobId());
+
+        JobApplicationDetail detail = jobApplicationRepository.findJobApplicationDetailById(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job application details not found"));
+        return GetJobApplicationDetailResponse.builder()
+                .id(detail.getId())
+                .jobId(detail.getJobId())
+                .candidateId(detail.getCandidateId())
+                .cvFileId(detail.getCvFileId())
+                .status(detail.getStatus())
+                .createdAt(detail.getCreatedAt())
+                .originalFileName(detail.getOriginalFileName())
+                .candidateDisplayedName(detail.getCandidateDisplayedName())
+                .email(detail.getEmail())
+                .phone(detail.getPhone())
+                .bio(detail.getBio())
+                .build();
     }
 
     @Override

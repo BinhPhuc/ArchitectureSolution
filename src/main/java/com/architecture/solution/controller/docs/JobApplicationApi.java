@@ -5,6 +5,7 @@ import com.architecture.solution.dto.common.ErrorResponse;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.jobapplication.ApplyJobResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;
+import com.architecture.solution.dto.jobapplication.GetJobApplicationDetailResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -81,4 +82,29 @@ public interface JobApplicationApi {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
     )
     ResponseEntity<ApiResponse<PageResponse<List<GetJobApplicationByJobIdResponse>>>> getJobApplications(String jobId, int page, int size);
+
+    @Operation(
+            summary = "Get job application details",
+            description = "Retrieve a single application with the submitted CV and candidate name, email, phone and bio. Only the recruiter who owns the job can view it"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Job application retrieved"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Missing, invalid or expired access token",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "User does not have the RECRUITER role or does not own the application's job",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Application, job, candidate or submitted CV does not exist or has been deleted",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    ResponseEntity<ApiResponse<GetJobApplicationDetailResponse>> getJobApplicationDetail(String applicationId);
 }
