@@ -121,38 +121,11 @@ public interface JobApi {
 
     @Operation(
             summary = "Delete job",
-            description = "Soft delete a job and its category associations. " +
-                    "Requires an authenticated user with the RECRUITER role who owns the job. " +
-                    "Send the access token in the Authorization header as `Bearer <access-token>`. " +
-                    "The job must exist and must not already be deleted. " +
-                    "Jobs with non-deleted applications cannot be deleted; change their status to CLOSED instead. " +
-                    "No request body is required. Repeating a successful deletion returns 404.",
-            parameters = @Parameter(
-                    name = "jobId",
-                    in = ParameterIn.PATH,
-                    required = true,
-                    description = "ID of the job to delete",
-                    schema = @Schema(type = "string"),
-                    example = "6d29c3c0-9f74-4ac3-bb85-23f9c459af57"
-            )
+            description = "Soft delete a job and its category associations"
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "200",
-            description = "Job and its category associations soft deleted successfully. Response data is null",
-            content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = ApiResponse.class),
-                    examples = @ExampleObject(
-                            name = "Job deleted",
-                            value = """
-                                    {
-                                      "status_code": 200,
-                                      "message": "Job deleted successfully",
-                                      "data": null
-                                    }
-                                    """
-                    )
-            )
+            description = "Job and its category associations soft deleted successfully. Response data is null"
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "401",
