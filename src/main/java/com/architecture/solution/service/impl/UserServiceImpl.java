@@ -12,6 +12,7 @@ import com.architecture.solution.entity.Recruiter;
 import com.architecture.solution.entity.User;
 import com.architecture.solution.exception.InvalidArgumentException;
 import com.architecture.solution.exception.ResourceExistsException;
+import com.architecture.solution.exception.UnauthorizedException;
 import com.architecture.solution.repository.CandidateRepository;
 import com.architecture.solution.repository.RecruiterRepository;
 import com.architecture.solution.repository.UserRepository;
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.Optional;
@@ -63,6 +65,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public UpdateUserProfileResponse updateUserProfile(UpdateUserProfileRequest request) {
         boolean needPersist = false;
         User user = SecurityUtils.getUser();
@@ -92,11 +95,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void changePassword(ChangePasswordRequest request) {
         User user = SecurityUtils.getUser();
         String currentPassword = request.getCurrentPassword();
         if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
-            throw new InvalidArgumentException("Current password is incorrect");
+            throw new UnauthorizedException("Current password is incorrect");
         }
         String newPassword = request.getNewPassword();
         String retypePassword = request.getRetypeNewPassword();

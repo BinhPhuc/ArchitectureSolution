@@ -7,12 +7,15 @@ import com.architecture.solution.dto.job.response.ApplyJobResponse;
 import com.architecture.solution.dto.job.response.GetJobResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.entity.JobApplication;
+import com.architecture.solution.entity.JobCategory;
 import com.architecture.solution.enums.ApplicationStatus;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
+import com.architecture.solution.exception.ResourceConflictException;
 import com.architecture.solution.exception.ResourceExistsException;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.JobApplicationRepository;
+import com.architecture.solution.repository.JobCategoryRepository;
 import com.architecture.solution.repository.JobRepository;
 import com.architecture.solution.service.FileService;
 import com.architecture.solution.service.JobService;
@@ -21,6 +24,7 @@ import com.architecture.solution.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -34,11 +38,12 @@ import java.util.List;
 public class JobServiceImpl implements JobService {
     private final JobRepository jobRepository;
     private final JobApplicationRepository jobApplicationRepository;
+    private final JobCategoryRepository jobCategoryRepository;
     private final FileService fileService;
 
     public GetJobResponse getJobById(String jobId) {
         Job job = jobRepository.findByIdAndIsDeletedFalse(jobId).orElseThrow(() -> new ResourceNotFoundException(
-                "Can not find this job"));
+                "Job not found"));
         return GetJobResponse.builder()
                 .id(job.getId())
                 .jobType(job.getJobType())
@@ -71,7 +76,7 @@ public class JobServiceImpl implements JobService {
     public ApplyJobResponse applyForJob(String jobId, MultipartFile cv) {
         String candidateId = SecurityUtils.getUserId();
         if (!jobRepository.existsByIdAndStatusAndIsDeletedFalse(jobId, JobStatus.OPEN)) {
-            throw new ResourceNotFoundException("Can not find this job");
+            throw new ResourceNotFoundException("Open job not found");
         }
         if (jobApplicationRepository.existsByJobIdAndCandidateId(jobId, candidateId)) {
             throw new ResourceExistsException("You have already applied for this job");
@@ -95,9 +100,10 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
+    @Transactional
     public GetJobResponse updateJobStatus(String jobId, UpdateJobStatusRequest request) {
-        Job job = jobRepository.findByIdAndIsDeletedFalse(jobId).orElseThrow(() -> new ResourceNotFoundException("Can not find " +
-                "this job"));
+        Job job = jobRepository.findByIdAndIsDeletedFalse(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
         job.setStatus(JobStatus.valueOf(request.getStatus()));
         jobRepository.save(job);
         return GetJobResponse.builder()
@@ -110,5 +116,26 @@ public class JobServiceImpl implements JobService {
                 .salaryMin(job.getSalaryMin())
                 .status(job.getStatus())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public void deleteJob(String jobId) {
+        Job job = jobRepository.findByIdAndIsDeletedFalse(jobId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job not found"));
+        if (!job.getRecruiterId().equals(SecurityUtils.getUserId())) {
+            throw new AccessDeniedException("You are not the owner of this job");
+        }
+        job.setIsDeleted(true);
+        List<JobApplication> applications = jobApplicationRepository.findByJobIdAndIsDeletedFalse(jobId);
+        if (!applications.isEmpty()) {
+            throw new ResourceConflictException("Cannot delete a job with applications. Please change status to CLOSED instead.");
+        }
+        List<JobCategory> jobCategories = jobCategoryRepository.findByJobIdAndIsDeletedFalse(jobId);
+        for (JobCategory category : jobCategories) {
+            category.setIsDeleted(true);
+        }
+        jobCategoryRepository.saveAll(jobCategories);
+        jobRepository.save(job);
     }
 }

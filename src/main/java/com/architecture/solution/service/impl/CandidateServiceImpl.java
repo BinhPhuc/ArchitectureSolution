@@ -31,8 +31,7 @@ public class CandidateServiceImpl implements CandidateService {
     @Transactional
     public UpdateCandidateProfileResponse updateCandidateProfile(UpdateCandidateProfileRequest request) {
         String userId = SecurityUtils.getUserId();
-        Candidate candidate = candidateRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("User not " +
-                "found"));
+        Candidate candidate = candidateRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Candidate profile not found"));
         if (request.getBio() != null) {
             candidate.setBio(request.getBio());
         }

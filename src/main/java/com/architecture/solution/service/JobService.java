@@ -21,4 +21,6 @@ public interface JobService {
     ApplyJobResponse applyForJob(String jobId, MultipartFile cv);
 
     GetJobResponse updateJobStatus(String jobId, UpdateJobStatusRequest request);
+
+    void deleteJob(String jobId);
 }
