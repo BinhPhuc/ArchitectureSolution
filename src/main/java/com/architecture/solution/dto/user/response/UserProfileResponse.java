@@ -1,6 +1,5 @@
 package com.architecture.solution.dto.user.response;
 
-import com.architecture.solution.dto.ProfileResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
@@ -18,5 +17,5 @@ public class UserProfileResponse {
     @JsonProperty("displayed_name")
     private String displayedName;
 
-    private ProfileResponse profiles;
+    private ExplicitProfileResponse profiles;
 }

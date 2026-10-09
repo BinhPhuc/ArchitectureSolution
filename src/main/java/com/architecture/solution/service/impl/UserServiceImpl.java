@@ -1,6 +1,6 @@
 package com.architecture.solution.service.impl;
 
-import com.architecture.solution.dto.ProfileResponse;
+import com.architecture.solution.dto.user.response.ExplicitProfileResponse;
 import com.architecture.solution.dto.candidate.response.CandidateProfileResponse;
 import com.architecture.solution.dto.recruiter.response.RecruiterProfileResponse;
 import com.architecture.solution.dto.user.request.ChangePasswordRequest;
@@ -50,7 +50,7 @@ public class UserServiceImpl implements UserService {
                 .companyName(value.getCompanyName())
                 .build()).orElse(null);
 
-        ProfileResponse profileResponse = ProfileResponse.builder()
+        ExplicitProfileResponse explicitProfileResponse = ExplicitProfileResponse.builder()
                 .candidateProfile(candidateProfileResponse)
                 .recruiterProfile(recruiterProfileResponse)
                 .build();
@@ -60,7 +60,7 @@ public class UserServiceImpl implements UserService {
                 .email(user.getEmail())
                 .username(user.getUsername())
                 .displayedName(user.getDisplayedName())
-                .profiles(profileResponse)
+                .profiles(explicitProfileResponse)
                 .build();
     }
 

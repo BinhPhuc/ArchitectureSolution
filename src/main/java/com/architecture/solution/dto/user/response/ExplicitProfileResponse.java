@@ -1,4 +1,4 @@
-package com.architecture.solution.dto;
+package com.architecture.solution.dto.user.response;
 
 import com.architecture.solution.dto.candidate.response.CandidateProfileResponse;
 import com.architecture.solution.dto.recruiter.response.RecruiterProfileResponse;
@@ -10,7 +10,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProfileResponse {
+public class ExplicitProfileResponse {
     @JsonProperty("candidate")
     private CandidateProfileResponse candidateProfile;
     @JsonProperty("recruiter")

@@ -1,4 +1,4 @@
-package com.architecture.solution.dto.candidate.response;
+package com.architecture.solution.dto.jobapplication;
 
 import com.architecture.solution.enums.ApplicationStatus;
 import com.architecture.solution.enums.JobType;
@@ -10,7 +10,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetApplicationResponse {
+public class GetJobApplicationByCandidateIdResponse {
     @JsonProperty("candidate_id")
     private String candidateId;
 

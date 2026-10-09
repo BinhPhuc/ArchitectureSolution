@@ -9,7 +9,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CandidateJobApplication {
+public class JobApplicationByCandidateId {
     private String candidateId;
 
     private String jobId;

@@ -1,4 +1,4 @@
-package com.architecture.solution.dto.job.response;
+package com.architecture.solution.dto.jobapplication;
 
 import com.architecture.solution.enums.ApplicationStatus;
 import com.fasterxml.jackson.annotation.JsonProperty;
