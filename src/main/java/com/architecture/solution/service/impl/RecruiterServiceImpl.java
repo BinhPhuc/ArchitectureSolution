@@ -28,7 +28,7 @@ public class RecruiterServiceImpl implements RecruiterService {
     @Override
     public RecruiterResponse getRecruiterById(String recruiterId, int page, int size) {
         Recruiter recruiter = recruiterRepository.findByUserIdAndIsDeletedFalse(recruiterId)
-                .orElseThrow(() -> new ResourceNotFoundException("Can not found this recruiter id"));
+                .orElseThrow(() -> new ResourceNotFoundException("Recruiter not found"));
         Page<Job> pageJobs = jobRepository.findByRecruiterIdAndStatusAndIsDeletedFalse(recruiterId,
                 JobStatus.OPEN, PageUtils.getDefaultPageable(page, size));
         PageResponse<List<GetJobResponse>> pageResponse = PageUtils.mapPageJobToPageResponse(pageJobs);

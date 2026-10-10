@@ -24,6 +24,6 @@ public class CategoryController implements CategoryApi {
     @GetMapping("")
     public ResponseEntity<ApiResponse<List<CategoryResponse>>> getAllCategory() {
         List<CategoryResponse> categoryResponses = categoryService.getAllCategory();
-        return ResponseEntity.ok(ApiResponse.success(categoryResponses));
+        return ResponseEntity.ok(ApiResponse.success(categoryResponses, "Categories retrieved successfully"));
     }
 }

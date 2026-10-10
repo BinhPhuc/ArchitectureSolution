@@ -2,11 +2,12 @@ package com.architecture.solution.controller;
 
 import com.architecture.solution.controller.docs.CandidateApi;
 import com.architecture.solution.dto.candidate.request.UpdateCandidateProfileRequest;
-import com.architecture.solution.dto.candidate.response.GetApplicationResponse;
+import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
 import com.architecture.solution.dto.candidate.response.UpdateCandidateProfileResponse;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.service.CandidateService;
+import com.architecture.solution.service.JobApplicationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import java.util.List;
 @RequestMapping("/api/v1/candidates")
 public class CandidateController implements CandidateApi {
     private final CandidateService candidateService;
+    private final JobApplicationService jobApplicationService;
 
     @Override
     @PreAuthorize("hasRole('CANDIDATE')")
@@ -36,11 +38,11 @@ public class CandidateController implements CandidateApi {
     @Override
     @PreAuthorize("hasRole('CANDIDATE')")
     @GetMapping("/me/applications")
-    public ResponseEntity<ApiResponse<PageResponse<List<GetApplicationResponse>>>> getApplicationList(
+    public ResponseEntity<ApiResponse<PageResponse<List<GetJobApplicationByCandidateIdResponse>>>> getApplicationList(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
-        PageResponse<List<GetApplicationResponse>> response = candidateService.getApplicationList(page, size);
+        PageResponse<List<GetJobApplicationByCandidateIdResponse>> response = jobApplicationService.getApplicationList(page, size);
         return ResponseEntity.ok(ApiResponse.success(response, "Candidate application list retrieved successfully"));
     }
 }

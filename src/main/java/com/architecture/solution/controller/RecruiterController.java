@@ -24,6 +24,6 @@ public class RecruiterController implements RecruiterApi {
             @RequestParam(name = "size", required = false, defaultValue = "10") int size
     ) {
         RecruiterResponse recruiterResponse = recruiterService.getRecruiterById(recruiterId, page, size);
-        return ResponseEntity.ok(ApiResponse.success(recruiterResponse));
+        return ResponseEntity.ok(ApiResponse.success(recruiterResponse, "Recruiter retrieved successfully"));
     }
 }

@@ -1,7 +1,7 @@
 package com.architecture.solution.controller.docs;
 
 import com.architecture.solution.dto.candidate.request.UpdateCandidateProfileRequest;
-import com.architecture.solution.dto.candidate.response.GetApplicationResponse;
+import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
 import com.architecture.solution.dto.candidate.response.UpdateCandidateProfileResponse;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.ErrorResponse;
@@ -72,6 +72,6 @@ public interface CandidateApi {
             description = "User is not a candidate",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     )
-    ResponseEntity<ApiResponse<PageResponse<List<GetApplicationResponse>>>> getApplicationList(
+    ResponseEntity<ApiResponse<PageResponse<List<GetJobApplicationByCandidateIdResponse>>>> getApplicationList(
             int page, int size);
 }
