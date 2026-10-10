@@ -24,7 +24,7 @@ public class JobApplicationController {
 
     @GetMapping("/{applicationId}")
     @PreAuthorize("hasRole('CANDIDATE')")
-    public ResponseEntity<ApiResponse<JobApplicationResponse>> geJobApplicationById(@PathVariable String applicationId) {
+    public ResponseEntity<ApiResponse<JobApplicationResponse>> getJobApplicationById(@PathVariable String applicationId) {
         String candidateId = SecurityUtils.getUserId();
         JobApplicationResponse jobApplicationResponse = jobApplicationService.findApplicationById(applicationId,candidateId);
         return ResponseEntity.ok(ApiResponse.success(jobApplicationResponse));

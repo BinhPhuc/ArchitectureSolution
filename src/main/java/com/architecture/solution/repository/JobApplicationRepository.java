@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -26,5 +27,14 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
             """)
     Page<CandidateJobApplication> getJobApplicationById(String id, Pageable pageable);
 
-    Optional<JobApplication> findByIdAndCandidateId(String id, String candidateId);
+    @Query("""
+    SELECT new com.architecture.solution.dto.jobApplication.response.JobApplicationResponse(
+        ja.id,ja.status,ja.cvFileId,ja.createdAt,ja.lastModifiedAt,ja.lastModifiedBy,j.title,j.description,j.salaryMin,j.salaryMax
+    )
+    FROM JobApplication ja
+    LEFT JOIN Job j ON ja.jobId = j.id
+    WHERE ja.id = :id
+      AND ja.candidateId = :candidateId
+    """)
+    Optional<JobApplicationResponse> findByIdAndCandidateId(@Param("id") String id, @Param("candidateId") String candidateId);
 }

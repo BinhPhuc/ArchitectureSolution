@@ -17,17 +17,8 @@ public class JobApplicationServiceImpl implements JobApplicationService {
 
     @Override
     public JobApplicationResponse findApplicationById(String id, String candidateId) {
-        JobApplication jobApplication = jobApplicationRepository.findByIdAndCandidateId(id,candidateId).orElseThrow(()
+        JobApplicationResponse jobApplicationResponse = jobApplicationRepository.findByIdAndCandidateId(id,candidateId).orElseThrow(()
                 -> new ResourceNotFoundException("Application not exist"));
-        return JobApplicationResponse.builder()
-                .jobId(jobApplication.getJobId())
-                .candidateId(jobApplication.getCandidateId())
-                .cvFileId(jobApplication.getCvFileId())
-                .status(jobApplication.getStatus())
-                .id(jobApplication.getId())
-                .createAt(jobApplication.getCreatedAt())
-                .lastModifiedAt(jobApplication.getLastModifiedAt())
-                .lastModifiedBy(jobApplication.getLastModifiedBy())
-                .build();
+        return jobApplicationResponse;
     }
 }
