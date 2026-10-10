@@ -2,6 +2,7 @@
 package com.architecture.solution.service;
 
 import com.architecture.solution.dto.common.PageResponse;
+import com.architecture.solution.dto.jobApplication.response.JobApplicationResponse;
 import com.architecture.solution.dto.jobapplication.ApplyJobResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;

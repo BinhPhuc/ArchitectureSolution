@@ -2,6 +2,7 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.file.response.FileUploadResponse;
+import com.architecture.solution.dto.jobApplication.response.JobApplicationResponse;
 import com.architecture.solution.dto.jobapplication.ApplyJobResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;
@@ -101,13 +102,14 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     @Override
     public PageResponse<List<GetJobApplicationByCandidateIdResponse>> getApplicationList(int page, int size) {
         String candidateId = SecurityUtils.getUserId();
-        Page<JobApplicationByCandidateId> projection = jobApplicationRepository.getJobApplicationByCandidateId(candidateId, PageUtils.getDefaultPageable(page, size));
+        Page<JobApplicationByCandidateId> projection = jobApplicationRepository.getJobApplicationByCandidateId(candidateId,
+                PageUtils.getDefaultPageable(page, size));
         return PageUtils.mapPageJobApplicationByCandidateIdToPageResponse(projection);
     }
 
     @Override
     public JobApplicationResponse findApplicationById(String id, String candidateId) {
-        JobApplication jobApplication = jobApplicationRepository.findByIdAndCandidateId(id,candidateId).orElseThrow(()
+        JobApplication jobApplication = jobApplicationRepository.findByIdAndCandidateId(id, candidateId).orElseThrow(()
                 -> new ResourceNotFoundException("Application not exist"));
         return JobApplicationResponse.builder()
                 .jobId(jobApplication.getJobId())

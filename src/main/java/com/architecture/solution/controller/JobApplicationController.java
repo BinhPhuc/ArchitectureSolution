@@ -3,10 +3,12 @@ package com.architecture.solution.controller;
 import com.architecture.solution.controller.docs.JobApplicationApi;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.PageResponse;
+import com.architecture.solution.dto.jobApplication.response.JobApplicationResponse;
 import com.architecture.solution.dto.jobapplication.ApplyJobResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationDetailResponse;
 import com.architecture.solution.service.JobApplicationService;
+import com.architecture.solution.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -58,7 +60,7 @@ public class JobApplicationController implements JobApplicationApi {
 
     @GetMapping("/{applicationId}")
     @PreAuthorize("hasRole('CANDIDATE')")
-    public ResponseEntity<ApiResponse<JobApplicationResponse>> geJobApplicationById(
+    public ResponseEntity<ApiResponse<JobApplicationResponse>> getJobApplicationById(
         @PathVariable String applicationId
     ) {
         String candidateId = SecurityUtils.getUserId();

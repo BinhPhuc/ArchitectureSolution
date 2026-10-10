@@ -3,6 +3,7 @@ package com.architecture.solution.controller.docs;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.ErrorResponse;
 import com.architecture.solution.dto.common.PageResponse;
+import com.architecture.solution.dto.jobApplication.response.JobApplicationResponse;
 import com.architecture.solution.dto.jobapplication.ApplyJobResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationDetailResponse;
@@ -107,4 +108,6 @@ public interface JobApplicationApi {
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
     )
     ResponseEntity<ApiResponse<GetJobApplicationDetailResponse>> getJobApplicationDetail(String applicationId);
+
+    ResponseEntity<ApiResponse<JobApplicationResponse>> getJobApplicationById(String applicationId);
 }

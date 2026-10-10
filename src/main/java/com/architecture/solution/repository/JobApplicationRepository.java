@@ -1,6 +1,5 @@
 package com.architecture.solution.repository;
 
-import com.architecture.solution.dto.jobApplication.response.JobApplicationResponse;
 import com.architecture.solution.entity.JobApplication;
 import com.architecture.solution.repository.projection.JobApplicationByCandidateId;
 import com.architecture.solution.repository.projection.JobApplicationByJobId;
@@ -55,8 +54,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
                 WHERE ja.isDeleted = FALSE AND f.isDeleted = FALSE AND u.isDeleted = FALSE AND ja.jobId = :jobId
             """)
     Page<JobApplicationByJobId> findJobApplicationByJobId(String jobId, Pageable pageable);
-    
-    Page<CandidateJobApplication> getJobApplicationById(String id, Pageable pageable);
 
     Optional<JobApplication> findByIdAndCandidateId(String id, String candidateId);
 }
