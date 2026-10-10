@@ -29,8 +29,7 @@ public class AuthController implements AuthApi {
     ) {
         log.info("Registering user: {}", registerRequest.getUsername());
         authService.register(registerRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(
-                null, "User registered successfully"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(null, "User registered successfully"));
     }
 
     @Override
@@ -40,11 +39,7 @@ public class AuthController implements AuthApi {
     ) {
         log.info("Logging in user: {}", loginRequest.getUsername());
         LoginResponse loginResponse = authService.login(loginRequest);
-        if (loginResponse == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.success(
-                    null, "Invalid username or password"));
-        }
-        return ResponseEntity.ok(ApiResponse.success(loginResponse));
+        return ResponseEntity.ok(ApiResponse.success(loginResponse, "User logged in successfully"));
     }
 
     @Override
@@ -54,11 +49,7 @@ public class AuthController implements AuthApi {
     ) {
         log.info("Refreshing token");
         TokenResponse tokenResponse = authService.refreshToken(refreshTokenRequest);
-        if (tokenResponse == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ApiResponse.success(
-                    null, "Invalid refresh token"));
-        }
-        return ResponseEntity.ok(ApiResponse.success(tokenResponse));
+        return ResponseEntity.ok(ApiResponse.success(tokenResponse, "Token refreshed successfully"));
     }
 
     @Override

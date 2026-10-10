@@ -8,6 +8,5 @@ import java.util.List;
 
 @Repository
 public interface JobCategoryRepository extends JpaRepository<JobCategory, String> {
-    List<JobCategory> findByCategoryId(String cgrId);
-
+    List<JobCategory> findByJobIdAndIsDeletedFalse(String jobId);
 }
