@@ -1,5 +1,6 @@
 package com.architecture.solution.repository;
 
+import com.architecture.solution.dto.jobApplication.response.JobApplicationResponse;
 import com.architecture.solution.entity.JobApplication;
 import com.architecture.solution.repository.projection.CandidateJobApplication;
 import org.springframework.data.domain.Page;
@@ -7,6 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.util.Optional;
 
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, String> {
@@ -22,4 +25,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
                 where ja.isDeleted = false and j.isDeleted = false and r.isDeleted = false and ja.candidateId = :id
             """)
     Page<CandidateJobApplication> getJobApplicationById(String id, Pageable pageable);
+
+    Optional<JobApplication> findByIdAndCandidateId(String id, String candidateId);
 }
