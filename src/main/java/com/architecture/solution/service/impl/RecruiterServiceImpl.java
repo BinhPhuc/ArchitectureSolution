@@ -3,7 +3,9 @@ package com.architecture.solution.service.impl;
 import com.architecture.solution.dto.candidate.request.UpdateCandidateProfileRequest;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.job.response.GetJobResponse;
+import com.architecture.solution.dto.job.response.RecruiterJobResponse;
 import com.architecture.solution.dto.recruiter.request.UpdateRecruiterProfileRequest;
+import com.architecture.solution.dto.recruiter.response.MyRecruiterProfileResponse;
 import com.architecture.solution.dto.recruiter.response.RecruiterResponse;
 import com.architecture.solution.dto.recruiter.response.UpdateRecruiterProfileResponse;
 import com.architecture.solution.entity.Job;
@@ -22,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +61,27 @@ public class RecruiterServiceImpl implements RecruiterService {
                 .companyName(recruiter.getCompanyName())
                 .lastModifiedAt(recruiter.getLastModifiedAt())
                 .build();
+    }
+
+    @Override
+    public MyRecruiterProfileResponse GetMyRecruiterInfor( int page, int size) {
+        String recruiterId = SecurityUtils.getUserId();
+        Page<RecruiterJobResponse> pageRecruiterResponse = jobRepository.getRecruiterJobResponse(recruiterId, PageUtils.getDefaultPageable(page, size));
+        PageResponse<List<RecruiterJobResponse>> pageResponse =
+                PageResponse.<List<RecruiterJobResponse>>builder()
+                        .pageNum(pageRecruiterResponse.getNumber() + 1)
+                        .pageSize(pageRecruiterResponse.getSize())
+                        .totalPage(pageRecruiterResponse.getTotalPages())
+                        .items(pageRecruiterResponse.getContent())
+                        .build();
+        Recruiter recruiter = recruiterRepository.findById(recruiterId).orElseThrow(() -> new ResourceNotFoundException("Can not find recruiter"));
+        return MyRecruiterProfileResponse.builder()
+                .userId(recruiter.getUserId())
+                .companyName(recruiter.getCompanyName())
+                .createdAt(recruiter.getCreatedAt())
+                .recruiterJobResponse(pageResponse)
+                .build();
+
     }
 
 }

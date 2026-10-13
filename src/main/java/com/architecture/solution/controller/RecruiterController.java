@@ -2,7 +2,9 @@ package com.architecture.solution.controller;
 
 import com.architecture.solution.controller.docs.RecruiterApi;
 import com.architecture.solution.dto.common.ApiResponse;
+import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.recruiter.request.UpdateRecruiterProfileRequest;
+import com.architecture.solution.dto.recruiter.response.MyRecruiterProfileResponse;
 import com.architecture.solution.dto.recruiter.response.RecruiterResponse;
 import com.architecture.solution.dto.recruiter.response.UpdateRecruiterProfileResponse;
 import com.architecture.solution.service.RecruiterService;
@@ -31,11 +33,21 @@ public class RecruiterController implements RecruiterApi {
     }
 
     @PreAuthorize("hasRole('RECRUITER')")
-    @PostMapping("me")
+    @PostMapping("/me")
     public ResponseEntity<ApiResponse<UpdateRecruiterProfileResponse>> updateRecruiter(
             @RequestBody UpdateRecruiterProfileRequest request
             ) {
         UpdateRecruiterProfileResponse response = recruiterService.updateRecruiterProfile(request);
         return ResponseEntity.ok(ApiResponse.success(response, "Recruiter update successfully"));
+    }
+
+    @PreAuthorize(("hasRole('RECRUITER')"))
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<MyRecruiterProfileResponse>> seeMyprofile(
+            @RequestParam(name = "page", required = false, defaultValue = "1") int page,
+            @RequestParam(name = "size", required = false, defaultValue = "10") int size
+    ) {
+        MyRecruiterProfileResponse myRecruiterProfileResponse = recruiterService.GetMyRecruiterInfor(page, size);
+        return ResponseEntity.ok(ApiResponse.success(myRecruiterProfileResponse,"See my recruiter profile successfully"));
     }
 }

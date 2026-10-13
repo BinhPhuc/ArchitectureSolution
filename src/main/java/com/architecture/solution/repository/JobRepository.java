@@ -1,6 +1,8 @@
 package com.architecture.solution.repository;
 
+import com.architecture.solution.dto.job.response.RecruiterJobResponse;
 import com.architecture.solution.entity.Job;
+import com.architecture.solution.enums.ApplicationStatus;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
 import org.springframework.data.domain.Page;
@@ -33,4 +35,20 @@ public interface JobRepository extends JpaRepository<Job, String> {
                      Pageable pageable);
 
     boolean existsByIdAndStatusAndIsDeletedFalse(String id, JobStatus status);
+
+    @Query("""
+        SELECT new com.architecture.solution.dto.job.response.RecruiterJobResponse(
+            new com.architecture.solution.dto.job.response.GetJobResponse(
+                j.id, j.title, j.description, j.recruiterId,
+                j.salaryMin, j.salaryMax, j.status, j.jobType, j.createdAt
+            ),
+            COUNT(ja.id)
+        )
+        FROM Job j
+        LEFT JOIN JobApplication ja
+            ON j.id = ja.jobId AND ja.status = "PENDING"
+        WHERE j.recruiterId = :recruiterId
+        GROUP BY j.id
+        """)
+    Page<RecruiterJobResponse> getRecruiterJobResponse(@Param("recruiterId") String recruiterId, Pageable pageable);
 }

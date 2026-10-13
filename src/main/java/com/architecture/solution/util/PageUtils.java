@@ -1,5 +1,6 @@
 package com.architecture.solution.util;
 
+import com.architecture.solution.dto.job.response.RecruiterJobResponse;
 import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.job.response.GetJobResponse;
