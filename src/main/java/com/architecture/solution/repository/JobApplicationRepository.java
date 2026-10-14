@@ -2,13 +2,15 @@ package com.architecture.solution.repository;
 
 import com.architecture.solution.dto.job.response.RecruiterJobResponse;
 import com.architecture.solution.entity.JobApplication;
-import com.architecture.solution.repository.projection.JobApplicationByCandidateId;
-import com.architecture.solution.repository.projection.JobApplicationByJobId;
-import com.architecture.solution.repository.projection.JobApplicationDetail;
+import com.architecture.solution.repository.projection.CandidateJobApplicationSummary;
+import com.architecture.solution.repository.projection.RecruiterJobApplicationSummary;
+import com.architecture.solution.repository.projection.RecruiterJobApplicationDetail;
+import com.architecture.solution.repository.projection.CandidateJobApplicationDetail;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,7 +23,7 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     Optional<JobApplication> findByIdAndIsDeletedFalse(String applicationId);
 
     @Query("""
-                SELECT new com.architecture.solution.repository.projection.JobApplicationDetail(
+                SELECT new com.architecture.solution.repository.projection.RecruiterJobApplicationDetail(
                     ja.id, ja.jobId, ja.candidateId, ja.cvFileId, ja.status, ja.createdAt, f.originalFilename, u.displayedName, u.email, c.phone, c.bio
                 )
                 FROM JobApplication ja
@@ -30,10 +32,10 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
                 JOIN Candidate c ON ja.candidateId = c.userId
                 WHERE ja.isDeleted = FALSE AND f.isDeleted = FALSE AND u.isDeleted = FALSE AND c.isDeleted = FALSE AND ja.id = :applicationId
             """)
-    Optional<JobApplicationDetail> findJobApplicationDetailById(String applicationId);
+    Optional<RecruiterJobApplicationDetail> findRecruiterJobApplicationDetailById(String applicationId);
 
     @Query("""
-                SELECT new com.architecture.solution.repository.projection.JobApplicationByCandidateId(
+                SELECT new com.architecture.solution.repository.projection.CandidateJobApplicationSummary(
                     ja.candidateId, ja.jobId, j.title, j.description, r.companyName, j.jobType, ja.status
                 )
                 FROM JobApplication ja
@@ -41,12 +43,12 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
                 JOIN Recruiter r on j.recruiterId = r.userId
                 WHERE ja.isDeleted = FALSE AND j.isDeleted = FALSE AND r.isDeleted = FALSE AND ja.candidateId = :candidateId
             """)
-    Page<JobApplicationByCandidateId> getJobApplicationByCandidateId(String candidateId, Pageable pageable);
+    Page<CandidateJobApplicationSummary> findCandidateJobApplicationSummariesByCandidateId(String candidateId, Pageable pageable);
 
     List<JobApplication> findByJobIdAndIsDeletedFalse(String jobId);
 
     @Query("""
-                SELECT new com.architecture.solution.repository.projection.JobApplicationByJobId(
+                SELECT new com.architecture.solution.repository.projection.RecruiterJobApplicationSummary(
                     ja.id, ja.jobId, ja.candidateId, ja.cvFileId, ja.status, f.originalFilename, u.displayedName, u.email
                 )
                 FROM JobApplication ja
@@ -56,4 +58,16 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
             """)
     Page<JobApplicationByJobId> findJobApplicationByJobId(String jobId, Pageable pageable);
 
+    Page<RecruiterJobApplicationSummary> findRecruiterJobApplicationSummariesByJobId(String jobId, Pageable pageable);
+
+    @Query("""
+                SELECT new com.architecture.solution.repository.projection.CandidateJobApplicationDetail(
+                    ja.id, ja.candidateId, ja.status, ja.cvFileId, j.title, j.description, r.companyName, j.salaryMin, j.salaryMax
+                )
+                FROM JobApplication ja
+                JOIN Job j ON ja.jobId = j.id
+                JOIN Recruiter r ON j.recruiterId = r.userId
+                WHERE ja.isDeleted = FALSE AND j.isDeleted = FALSE AND r.isDeleted = FALSE AND ja.id = :id
+            """)
+    Optional<CandidateJobApplicationDetail> findCandidateJobApplicationDetailById(@Param("id") String id);
 }

@@ -9,7 +9,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ApplyJobResponse {
+public class ApplyForJobResponse {
     @JsonProperty("application_id")
     private String applicationId;
 

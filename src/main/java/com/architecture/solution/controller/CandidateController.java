@@ -2,7 +2,7 @@ package com.architecture.solution.controller;
 
 import com.architecture.solution.controller.docs.CandidateApi;
 import com.architecture.solution.dto.candidate.request.UpdateCandidateProfileRequest;
-import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
+import com.architecture.solution.dto.jobapplication.CandidateJobApplicationSummaryResponse;
 import com.architecture.solution.dto.candidate.response.UpdateCandidateProfileResponse;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.PageResponse;
@@ -38,11 +38,11 @@ public class CandidateController implements CandidateApi {
     @Override
     @PreAuthorize("hasRole('CANDIDATE')")
     @GetMapping("/me/applications")
-    public ResponseEntity<ApiResponse<PageResponse<List<GetJobApplicationByCandidateIdResponse>>>> getApplicationList(
+    public ResponseEntity<ApiResponse<PageResponse<List<CandidateJobApplicationSummaryResponse>>>> getCandidateJobApplicationSummaries(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "size", defaultValue = "10") int size
     ) {
-        PageResponse<List<GetJobApplicationByCandidateIdResponse>> response = jobApplicationService.getApplicationList(page, size);
+        PageResponse<List<CandidateJobApplicationSummaryResponse>> response = jobApplicationService.getCandidateJobApplicationSummaries(page, size);
         return ResponseEntity.ok(ApiResponse.success(response, "Candidate application list retrieved successfully"));
     }
 }
