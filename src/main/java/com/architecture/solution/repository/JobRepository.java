@@ -1,6 +1,8 @@
 package com.architecture.solution.repository;
 
+import com.architecture.solution.dto.job.response.RecruiterJobResponse;
 import com.architecture.solution.entity.Job;
+import com.architecture.solution.enums.ApplicationStatus;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
 import org.springframework.data.domain.Page;
