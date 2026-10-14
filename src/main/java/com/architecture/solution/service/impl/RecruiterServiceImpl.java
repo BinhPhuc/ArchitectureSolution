@@ -2,6 +2,7 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.job.response.GetJobResponse;
+import com.architecture.solution.dto.job.response.RecruiterJobSummaryResponse;
 import com.architecture.solution.dto.recruiter.request.UpdateRecruiterProfileRequest;
 import com.architecture.solution.dto.recruiter.response.MyRecruiterProfileResponse;
 import com.architecture.solution.dto.recruiter.response.RecruiterResponse;
@@ -12,6 +13,7 @@ import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.JobRepository;
 import com.architecture.solution.repository.RecruiterRepository;
+import com.architecture.solution.repository.projection.RecruiterJobSummary;
 import com.architecture.solution.service.RecruiterService;
 import com.architecture.solution.util.PageUtils;
 import com.architecture.solution.util.SecurityUtils;
@@ -20,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -70,5 +73,13 @@ public class RecruiterServiceImpl implements RecruiterService {
                 .companyName(recruiter.getCompanyName())
                 .createdAt(recruiter.getCreatedAt())
                 .build();
+    }
+
+    @Override
+    public PageResponse<List<RecruiterJobSummaryResponse>> getMyJobs(String title, JobStatus status, int page, int size) {
+        String titleFilter = StringUtils.hasText(title) ? title.trim() : null;
+        Page<RecruiterJobSummary> pageJob = jobRepository.searchRecruiterJobSummaries(SecurityUtils.getUserId(),
+                titleFilter, status, PageUtils.getDefaultPageable(page, size));
+        return PageUtils.mapPageRecruiterJobSummaryToPageResponse(pageJob);
     }
 }
