@@ -6,7 +6,7 @@ import com.architecture.solution.dto.auth.response.TokenResponse;
 import com.architecture.solution.entity.*;
 import com.architecture.solution.enums.RoleName;
 import com.architecture.solution.enums.TokenType;
-import com.architecture.solution.exception.ResourceNotFoundException;
+import com.architecture.solution.exception.UnauthorizedException;
 import com.architecture.solution.repository.*;
 import com.architecture.solution.util.JwtUtils;
 import com.architecture.solution.dto.auth.request.LoginRequest;
@@ -19,6 +19,8 @@ import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -70,15 +72,15 @@ public class AuthServiceImpl implements AuthService {
                 .build());
 
         User user = userRepository.findByUsername(registerRequest.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found after " +
+                .orElseThrow(() -> new IllegalStateException("User not found after " +
                         "registration"));
 
         for (RoleName roleName : roleNames) {
             if (roleName == RoleName.ADMIN) {
-                throw new InvalidArgumentException("Cannot register as ADMIN");
+                throw new AccessDeniedException("Cannot register as ADMIN");
             }
             Role role = roleRepository.findByName(roleName)
-                    .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+                    .orElseThrow(() -> new IllegalStateException("Role not found"));
             UserRole userRole = UserRole.builder()
                     .userId(user.getId())
                     .roleId(role.getId())
@@ -100,6 +102,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public LoginResponse login(LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -110,7 +113,7 @@ public class AuthServiceImpl implements AuthService {
 
         Object principal = authentication.getPrincipal();
         if (principal == null) {
-            throw new InvalidArgumentException("Invalid username or password");
+            throw new BadCredentialsException("Invalid username or password");
         }
 
         User user = ((CustomUserDetails) principal).getUser();
@@ -133,6 +136,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public TokenResponse refreshToken(RefreshTokenRequest refreshTokenRequest) {
         String refreshToken = refreshTokenRequest.getRefreshToken();
         if (refreshToken == null || refreshToken.isEmpty()) {
@@ -140,12 +144,12 @@ public class AuthServiceImpl implements AuthService {
         }
         Claims claims = jwtUtil.extractAllClaims(refreshToken);
         if (!TokenType.REFRESH.name().equals(jwtUtil.extractType(claims))) {
-            throw new InvalidArgumentException("Invalid token type");
+            throw new UnauthorizedException("Invalid token type");
         }
         User user = userRepository.findByRefreshTokenAndIsDeletedFalse(refreshToken)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
         if (!jwtUtil.validateToken(claims, user.getUsername())) {
-            throw new InvalidArgumentException("Invalid refresh token");
+            throw new UnauthorizedException("Invalid refresh token");
         }
         String newAccessToken = jwtUtil.generateAccessToken(user);
         String newRefreshToken = jwtUtil.generateRefreshToken(user,
@@ -160,6 +164,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    @Transactional
     public void logout(RefreshTokenRequest request) {
         String refreshToken = request.getRefreshToken();
         if (refreshToken == null || refreshToken.isEmpty()) {
@@ -167,12 +172,12 @@ public class AuthServiceImpl implements AuthService {
         }
         Claims claims = jwtUtil.extractAllClaims(refreshToken);
         if (!TokenType.REFRESH.name().equals(jwtUtil.extractType(claims))) {
-            throw new InvalidArgumentException("Invalid token type");
+            throw new UnauthorizedException("Invalid token type");
         }
         User user = userRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new ResourceNotFoundException("Invalid refresh token"));
+                .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
         if (!jwtUtil.validateToken(claims, user.getUsername())) {
-            throw new InvalidArgumentException("Invalid refresh token");
+            throw new UnauthorizedException("Invalid refresh token");
         }
         user.setRefreshToken(null);
         userRepository.save(user);

@@ -5,9 +5,11 @@ import com.architecture.solution.exception.*;
 import com.architecture.solution.util.ErrorResponseUtils;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -18,11 +20,26 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
     @ExceptionHandler(ResourceExistsException.class)
     public ResponseEntity<ErrorResponse> handleResourceExistsException(ResourceExistsException ex, HttpServletRequest request) {
         return ErrorResponseUtils.toResponseEntity(
-                HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+                HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(ResourceConflictException.class)
+    public ResponseEntity<ErrorResponse> handleResourceConflictException(ResourceConflictException ex,
+                                                                        HttpServletRequest request) {
+        return ErrorResponseUtils.toResponseEntity(
+                HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex,
+                                                                    HttpServletRequest request) {
+        return ErrorResponseUtils.toResponseEntity(
+                HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(InvalidArgumentException.class)
@@ -79,7 +96,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleJwtException(JwtException ex,
                                                             HttpServletRequest request) {
         return ErrorResponseUtils.toResponseEntity(
-                HttpStatus.BAD_REQUEST, "Invalid or expired token", request.getRequestURI());
+                HttpStatus.UNAUTHORIZED, "Invalid or expired token", request.getRequestURI());
     }
 
     @ExceptionHandler(UnauthorizedException.class)
@@ -92,12 +109,26 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BucketNotEmptyException.class)
     public ResponseEntity<ErrorResponse> handleBucketNotEmptyException(BucketNotEmptyException ex, HttpServletRequest request) {
         return ErrorResponseUtils.toResponseEntity(
-                HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+                HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(IllegalFileException.class)
     public ResponseEntity<ErrorResponse> handleIllegalFileException(IllegalFileException ex, HttpServletRequest request) {
         return ErrorResponseUtils.toResponseEntity(
                 HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(StorageException.class)
+    public ResponseEntity<ErrorResponse> handleStorageException(StorageException ex, HttpServletRequest request) {
+        log.error("Storage operation failed for {}", request.getRequestURI(), ex);
+        return ErrorResponseUtils.toResponseEntity(
+                HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalStateException(IllegalStateException ex, HttpServletRequest request) {
+        log.error("Invalid server state for {}", request.getRequestURI(), ex);
+        return ErrorResponseUtils.toResponseEntity(
+                HttpStatus.INTERNAL_SERVER_ERROR, "An internal server error occurred", request.getRequestURI());
     }
 }

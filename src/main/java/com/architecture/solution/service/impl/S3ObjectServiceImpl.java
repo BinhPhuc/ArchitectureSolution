@@ -1,6 +1,6 @@
 package com.architecture.solution.service.impl;
 
-import com.architecture.solution.exception.IllegalFileException;
+import com.architecture.solution.exception.StorageException;
 import com.architecture.solution.service.S3ObjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ public class S3ObjectServiceImpl implements S3ObjectService {
                     RequestBody.fromInputStream(inputStream, file.getSize()));
         } catch (IOException e) {
             log.error("Failed to upload file to S3: {}", e.getMessage());
-            throw new IllegalFileException("Failed to upload file to S3: " + e.getMessage());
+            throw new StorageException("Failed to upload file to S3: " + e.getMessage(), e);
         }
     }
 }
