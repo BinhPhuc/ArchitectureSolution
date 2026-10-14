@@ -1,13 +1,13 @@
 package com.architecture.solution.util;
 
-import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
+import com.architecture.solution.dto.jobapplication.CandidateJobApplicationSummaryResponse;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.job.response.GetJobResponse;
-import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;
+import com.architecture.solution.dto.jobapplication.RecruiterJobApplicationSummaryResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.exception.InvalidArgumentException;
-import com.architecture.solution.repository.projection.JobApplicationByCandidateId;
-import com.architecture.solution.repository.projection.JobApplicationByJobId;
+import com.architecture.solution.repository.projection.CandidateJobApplicationSummary;
+import com.architecture.solution.repository.projection.RecruiterJobApplicationSummary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -46,9 +46,9 @@ public class PageUtils {
                 .build();
     }
 
-    public static PageResponse<List<GetJobApplicationByCandidateIdResponse>> mapPageJobApplicationByCandidateIdToPageResponse(Page<JobApplicationByCandidateId> pageApplication) {
-        Page<GetJobApplicationByCandidateIdResponse> pageApplicationResponse = pageApplication.map(application ->
-                GetJobApplicationByCandidateIdResponse
+    public static PageResponse<List<CandidateJobApplicationSummaryResponse>> mapPageCandidateJobApplicationSummaryToPageResponse(Page<CandidateJobApplicationSummary> pageApplication) {
+        Page<CandidateJobApplicationSummaryResponse> pageApplicationResponse = pageApplication.map(application ->
+                CandidateJobApplicationSummaryResponse
                         .builder()
                         .candidateId(application.getCandidateId())
                         .jobId(application.getJobId())
@@ -62,9 +62,9 @@ public class PageUtils {
         int totalPages = pageApplicationResponse.getTotalPages();
         int pageNum = pageApplicationResponse.getNumber() + 1;
         int pageSize = pageApplicationResponse.getSize();
-        List<GetJobApplicationByCandidateIdResponse> content = pageApplicationResponse.getContent();
+        List<CandidateJobApplicationSummaryResponse> content = pageApplicationResponse.getContent();
         return PageResponse.
-                <List<GetJobApplicationByCandidateIdResponse>>builder()
+                <List<CandidateJobApplicationSummaryResponse>>builder()
                 .totalPage(totalPages)
                 .pageNum(pageNum)
                 .pageSize(pageSize)
@@ -72,10 +72,10 @@ public class PageUtils {
                 .build();
     }
 
-    public static PageResponse<List<GetJobApplicationByJobIdResponse>> mapPageJobApplicationByJobIdToPageResponse(Page<JobApplicationByJobId> pageJobApplication) {
-        Page<GetJobApplicationByJobIdResponse> pageJobApplicationResponse =
+    public static PageResponse<List<RecruiterJobApplicationSummaryResponse>> mapPageRecruiterJobApplicationSummaryToPageResponse(Page<RecruiterJobApplicationSummary> pageJobApplication) {
+        Page<RecruiterJobApplicationSummaryResponse> pageJobApplicationResponse =
                 pageJobApplication.map(application ->
-                        GetJobApplicationByJobIdResponse
+                        RecruiterJobApplicationSummaryResponse
                                 .builder()
                                 .id(application.getId())
                                 .jobId(application.getJobId())
@@ -90,10 +90,10 @@ public class PageUtils {
         int totalPages = pageJobApplicationResponse.getTotalPages();
         int pageNum = pageJobApplicationResponse.getNumber() + 1;
         int pageSize = pageJobApplicationResponse.getSize();
-        List<GetJobApplicationByJobIdResponse> content =
+        List<RecruiterJobApplicationSummaryResponse> content =
                 pageJobApplicationResponse.getContent();
         return PageResponse.
-                <List<GetJobApplicationByJobIdResponse>>builder()
+                <List<RecruiterJobApplicationSummaryResponse>>builder()
                 .totalPage(totalPages)
                 .pageNum(pageNum)
                 .pageSize(pageSize)

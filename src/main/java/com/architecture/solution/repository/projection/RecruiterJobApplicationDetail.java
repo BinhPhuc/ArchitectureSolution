@@ -10,7 +10,7 @@ import java.time.Instant;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class JobApplicationDetail {
+public class RecruiterJobApplicationDetail {
     private String id;
     private String jobId;
     private String candidateId;

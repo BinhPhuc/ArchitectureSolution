@@ -1,26 +1,23 @@
 package com.architecture.solution.repository.projection;
 
 import com.architecture.solution.enums.ApplicationStatus;
-import com.architecture.solution.enums.JobType;
 import lombok.*;
+
+import java.math.BigDecimal;
 
 @Builder
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class JobApplicationByCandidateId {
+public class CandidateJobApplicationDetail {
+    private String id;
     private String candidateId;
-
-    private String jobId;
-
-    private String title;
-
-    private String description;
-
-    private String companyName;
-
-    private JobType jobType;
-
     private ApplicationStatus status;
+    private String cvFileId;
+    private String title;
+    private String description;
+    private String companyName;
+    private BigDecimal salaryMin;
+    private BigDecimal salaryMax;
 }

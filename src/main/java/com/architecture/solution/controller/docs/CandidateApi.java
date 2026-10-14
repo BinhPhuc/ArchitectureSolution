@@ -1,7 +1,7 @@
 package com.architecture.solution.controller.docs;
 
 import com.architecture.solution.dto.candidate.request.UpdateCandidateProfileRequest;
-import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
+import com.architecture.solution.dto.jobapplication.CandidateJobApplicationSummaryResponse;
 import com.architecture.solution.dto.candidate.response.UpdateCandidateProfileResponse;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.ErrorResponse;
@@ -46,8 +46,7 @@ public interface CandidateApi {
             description = "Candidate not found",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     )
-    ResponseEntity<ApiResponse<UpdateCandidateProfileResponse>> updateCandidateProfile(
-            UpdateCandidateProfileRequest request);
+    ResponseEntity<ApiResponse<UpdateCandidateProfileResponse>> updateCandidateProfile(UpdateCandidateProfileRequest request);
 
     @Operation(
             summary = "Get candidate application list",
@@ -72,6 +71,5 @@ public interface CandidateApi {
             description = "User is not a candidate",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     )
-    ResponseEntity<ApiResponse<PageResponse<List<GetJobApplicationByCandidateIdResponse>>>> getApplicationList(
-            int page, int size);
+    ResponseEntity<ApiResponse<PageResponse<List<CandidateJobApplicationSummaryResponse>>>> getCandidateJobApplicationSummaries(int page, int size);
 }

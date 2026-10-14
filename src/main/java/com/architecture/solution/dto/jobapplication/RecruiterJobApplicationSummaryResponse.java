@@ -1,6 +1,7 @@
-package com.architecture.solution.repository.projection;
+package com.architecture.solution.dto.jobapplication;
 
 import com.architecture.solution.enums.ApplicationStatus;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 @Builder
@@ -8,19 +9,24 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class JobApplicationByJobId {
+public class RecruiterJobApplicationSummaryResponse {
     private String id;
 
+    @JsonProperty("job_id")
     private String jobId;
 
+    @JsonProperty("candidate_id")
     private String candidateId;
 
+    @JsonProperty("cv_file_id")
     private String cvFileId;
 
     private ApplicationStatus status;
 
+    @JsonProperty("original_file_name")
     private String originalFileName;
 
+    @JsonProperty("candidate_displayed_name")
     private String candidateDisplayedName;
 
     private String email;
