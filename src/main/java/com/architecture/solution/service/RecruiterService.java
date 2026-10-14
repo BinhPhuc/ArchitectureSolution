@@ -9,6 +9,8 @@ import com.architecture.solution.dto.recruiter.response.UpdateRecruiterProfileRe
 
 public interface RecruiterService {
     RecruiterResponse getRecruiterById(String recruiterId, int page, int size);
+
     UpdateRecruiterProfileResponse updateRecruiterProfile(UpdateRecruiterProfileRequest request);
-    MyRecruiterProfileResponse GetMyRecruiterInfor( int page, int size);
+
+    MyRecruiterProfileResponse getMyProfile();
 }

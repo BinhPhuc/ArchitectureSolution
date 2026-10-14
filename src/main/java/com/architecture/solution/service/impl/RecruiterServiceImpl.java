@@ -1,9 +1,7 @@
 package com.architecture.solution.service.impl;
 
-import com.architecture.solution.dto.candidate.request.UpdateCandidateProfileRequest;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.job.response.GetJobResponse;
-import com.architecture.solution.dto.job.response.RecruiterJobResponse;
 import com.architecture.solution.dto.recruiter.request.UpdateRecruiterProfileRequest;
 import com.architecture.solution.dto.recruiter.response.MyRecruiterProfileResponse;
 import com.architecture.solution.dto.recruiter.response.RecruiterResponse;
@@ -24,7 +22,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -51,8 +48,8 @@ public class RecruiterServiceImpl implements RecruiterService {
     @Transactional
     public UpdateRecruiterProfileResponse updateRecruiterProfile(UpdateRecruiterProfileRequest request) {
         String userId = SecurityUtils.getUserId();
-        Recruiter recruiter = recruiterRepository.findById(userId).orElseThrow(()-> new ResourceNotFoundException("Can not fine recruiter"));
-        if(request.getCompanyName() != null) {
+        Recruiter recruiter = recruiterRepository.findById(userId).orElseThrow(() -> new ResourceNotFoundException("Can not find recruiter"));
+        if (request.getCompanyName() != null) {
             recruiter.setCompanyName(request.getCompanyName());
         }
         recruiterRepository.save(recruiter);
@@ -64,24 +61,14 @@ public class RecruiterServiceImpl implements RecruiterService {
     }
 
     @Override
-    public MyRecruiterProfileResponse GetMyRecruiterInfor( int page, int size) {
+    public MyRecruiterProfileResponse getMyProfile() {
         String recruiterId = SecurityUtils.getUserId();
-        Page<RecruiterJobResponse> pageRecruiterResponse = jobRepository.getRecruiterJobResponse(recruiterId, PageUtils.getDefaultPageable(page, size));
-        PageResponse<List<RecruiterJobResponse>> pageResponse =
-                PageResponse.<List<RecruiterJobResponse>>builder()
-                        .pageNum(pageRecruiterResponse.getNumber() + 1)
-                        .pageSize(pageRecruiterResponse.getSize())
-                        .totalPage(pageRecruiterResponse.getTotalPages())
-                        .items(pageRecruiterResponse.getContent())
-                        .build();
-        Recruiter recruiter = recruiterRepository.findById(recruiterId).orElseThrow(() -> new ResourceNotFoundException("Can not find recruiter"));
+        Recruiter recruiter = recruiterRepository.findById(recruiterId)
+                .orElseThrow(() -> new ResourceNotFoundException("Can not find recruiter"));
         return MyRecruiterProfileResponse.builder()
                 .userId(recruiter.getUserId())
                 .companyName(recruiter.getCompanyName())
                 .createdAt(recruiter.getCreatedAt())
-                .recruiterJobResponse(pageResponse)
                 .build();
-
     }
-
 }

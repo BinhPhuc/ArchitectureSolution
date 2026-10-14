@@ -36,18 +36,15 @@ public class RecruiterController implements RecruiterApi {
     @PostMapping("/me")
     public ResponseEntity<ApiResponse<UpdateRecruiterProfileResponse>> updateRecruiter(
             @RequestBody UpdateRecruiterProfileRequest request
-            ) {
+    ) {
         UpdateRecruiterProfileResponse response = recruiterService.updateRecruiterProfile(request);
         return ResponseEntity.ok(ApiResponse.success(response, "Recruiter update successfully"));
     }
 
-    @PreAuthorize(("hasRole('RECRUITER')"))
+    @PreAuthorize("hasRole('RECRUITER')")
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<MyRecruiterProfileResponse>> seeMyprofile(
-            @RequestParam(name = "page", required = false, defaultValue = "1") int page,
-            @RequestParam(name = "size", required = false, defaultValue = "10") int size
-    ) {
-        MyRecruiterProfileResponse myRecruiterProfileResponse = recruiterService.GetMyRecruiterInfor(page, size);
-        return ResponseEntity.ok(ApiResponse.success(myRecruiterProfileResponse,"See my recruiter profile successfully"));
+    public ResponseEntity<ApiResponse<MyRecruiterProfileResponse>> getMyProfile() {
+        MyRecruiterProfileResponse response = recruiterService.getMyProfile();
+        return ResponseEntity.ok(ApiResponse.success(response, "Recruiter profile retrieved successfully"));
     }
 }
