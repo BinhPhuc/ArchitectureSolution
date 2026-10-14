@@ -5,6 +5,7 @@ import com.architecture.solution.entity.Job;
 import com.architecture.solution.enums.ApplicationStatus;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.enums.JobType;
+import com.architecture.solution.repository.projection.RecruiterJobSummary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -33,6 +34,22 @@ public interface JobRepository extends JpaRepository<Job, String> {
                      @Param("jobType") JobType jobType,
                      @Param("status") JobStatus status,
                      Pageable pageable);
+
+    @Query("""
+            SELECT new com.architecture.solution.repository.projection.RecruiterJobSummary(
+                j.id, j.title, j.description, j.recruiterId, j.salaryMin, j.salaryMax, j.status, j.jobType, j.createdAt,
+                (SELECT COUNT(ja) FROM JobApplication ja WHERE ja.jobId = j.id AND ja.isDeleted = FALSE)
+            )
+            FROM Job j
+            WHERE j.isDeleted = FALSE
+              AND j.recruiterId = :recruiterId
+              AND (:title IS NULL OR j.title LIKE CONCAT('%', :title, '%'))
+              AND (:status IS NULL OR j.status = :status)
+            """)
+    Page<RecruiterJobSummary> searchRecruiterJobSummaries(@Param("recruiterId") String recruiterId,
+                                                          @Param("title") String title,
+                                                          @Param("status") JobStatus status,
+                                                          Pageable pageable);
 
     boolean existsByIdAndStatusAndIsDeletedFalse(String id, JobStatus status);
 }
