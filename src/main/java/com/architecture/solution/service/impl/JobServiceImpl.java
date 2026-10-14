@@ -2,6 +2,7 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.job.request.CreateJobRequest;
+import com.architecture.solution.dto.job.request.UpdateJobRequest;
 import com.architecture.solution.dto.job.request.UpdateJobStatusRequest;
 import com.architecture.solution.dto.job.response.GetJobResponse;
 import com.architecture.solution.entity.Job;
@@ -91,6 +92,42 @@ public class JobServiceImpl implements JobService {
                 .salaryMin(job.getSalaryMin())
                 .status(job.getStatus())
                 .createdAt(job.getCreatedAt())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public GetJobResponse updateJob(String jobId, UpdateJobRequest request) {
+        Job job = jobOwnershipValidator.getOwnedJob(jobId);
+        if (request.getTitle() != null) {
+            job.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            job.setDescription(request.getDescription());
+        }
+        if (request.getSalaryMin() != null) {
+            job.setSalaryMin(request.getSalaryMin());
+        }
+        if (request.getSalaryMax() != null) {
+            job.setSalaryMax(request.getSalaryMax());
+        }
+        if (request.getJobType() != null) {
+            job.setJobType(JobType.valueOf(request.getJobType()));
+        }
+        if (job.getSalaryMin() != null && job.getSalaryMax() != null
+                && job.getSalaryMin().compareTo(job.getSalaryMax()) > 0) {
+            throw new InvalidArgumentException("Minimum salary must not be greater than maximum salary");
+        }
+        jobRepository.save(job);
+        return GetJobResponse.builder()
+                .id(job.getId())
+                .jobType(job.getJobType())
+                .title(job.getTitle())
+                .description(job.getDescription())
+                .recruiterId(job.getRecruiterId())
+                .salaryMax(job.getSalaryMax())
+                .salaryMin(job.getSalaryMin())
+                .status(job.getStatus())
                 .build();
     }
 

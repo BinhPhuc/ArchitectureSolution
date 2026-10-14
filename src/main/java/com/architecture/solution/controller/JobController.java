@@ -4,6 +4,7 @@ import com.architecture.solution.controller.docs.JobApi;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.job.request.CreateJobRequest;
+import com.architecture.solution.dto.job.request.UpdateJobRequest;
 import com.architecture.solution.dto.job.request.UpdateJobStatusRequest;
 import com.architecture.solution.dto.job.response.GetJobResponse;
 import com.architecture.solution.enums.JobStatus;
@@ -52,6 +53,17 @@ public class JobController implements JobApi {
     public ResponseEntity<ApiResponse<GetJobResponse>> createJob(@Valid @RequestBody CreateJobRequest request) {
         GetJobResponse response = jobService.createJob(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.created(response, "Job created successfully"));
+    }
+
+    @Override
+    @PreAuthorize("hasRole('RECRUITER')")
+    @PostMapping("/{jobId}")
+    public ResponseEntity<ApiResponse<GetJobResponse>> updateJob(
+            @PathVariable String jobId,
+            @Valid @RequestBody UpdateJobRequest request
+    ) {
+        GetJobResponse response = jobService.updateJob(jobId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "Job updated successfully"));
     }
 
     @Override
