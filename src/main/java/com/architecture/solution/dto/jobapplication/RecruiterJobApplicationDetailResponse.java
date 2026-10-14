@@ -11,7 +11,7 @@ import java.time.Instant;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetJobApplicationDetailResponse {
+public class RecruiterJobApplicationDetailResponse {
     private String id;
 
     @JsonProperty("job_id")

@@ -3,9 +3,10 @@ package com.architecture.solution.controller.docs;
 import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.ErrorResponse;
 import com.architecture.solution.dto.common.PageResponse;
-import com.architecture.solution.dto.jobapplication.ApplyJobResponse;
-import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;
-import com.architecture.solution.dto.jobapplication.GetJobApplicationDetailResponse;
+import com.architecture.solution.dto.jobapplication.CandidateJobApplicationDetailResponse;
+import com.architecture.solution.dto.jobapplication.ApplyForJobResponse;
+import com.architecture.solution.dto.jobapplication.RecruiterJobApplicationSummaryResponse;
+import com.architecture.solution.dto.jobapplication.RecruiterJobApplicationDetailResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -17,7 +18,6 @@ import java.util.List;
 
 @Tag(name = "Job Application Controller")
 public interface JobApplicationApi {
-
     @Operation(
             summary = "Apply for job",
             description = "Submit an application for a job with a PDF CV. Only candidates can apply"
@@ -51,7 +51,7 @@ public interface JobApplicationApi {
             description = "Concurrent duplicate application rejected by database constraint",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     )
-    ResponseEntity<ApiResponse<ApplyJobResponse>> applyForJob(String jobId, MultipartFile cv);
+    ResponseEntity<ApiResponse<ApplyForJobResponse>> applyForJob(String jobId, MultipartFile cv);
 
     @Operation(
             summary = "Get job applications",
@@ -81,7 +81,7 @@ public interface JobApplicationApi {
             description = "Job does not exist or has been deleted",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
     )
-    ResponseEntity<ApiResponse<PageResponse<List<GetJobApplicationByJobIdResponse>>>> getJobApplications(String jobId, int page, int size);
+    ResponseEntity<ApiResponse<PageResponse<List<RecruiterJobApplicationSummaryResponse>>>> getRecruiterJobApplicationSummaries(String jobId, int page, int size);
 
     @Operation(
             summary = "Get job application details",
@@ -106,5 +106,26 @@ public interface JobApplicationApi {
             description = "Application, job, candidate or submitted CV does not exist or has been deleted",
             content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
     )
-    ResponseEntity<ApiResponse<GetJobApplicationDetailResponse>> getJobApplicationDetail(String applicationId);
+    ResponseEntity<ApiResponse<RecruiterJobApplicationDetailResponse>> getRecruiterJobApplicationDetail(String applicationId);
+
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "200",
+            description = "Job application retrieved"
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "401",
+            description = "Missing, invalid or expired access token",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "403",
+            description = "User does not have the CANDIDATE role or the application belongs to another candidate",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "404",
+            description = "Application, job or recruiter does not exist or has been deleted",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))
+    )
+    ResponseEntity<ApiResponse<CandidateJobApplicationDetailResponse>> getCandidateJobApplicationDetail(String applicationId);
 }

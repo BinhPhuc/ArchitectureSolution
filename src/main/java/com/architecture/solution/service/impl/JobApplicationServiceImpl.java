@@ -2,20 +2,23 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.file.response.FileUploadResponse;
-import com.architecture.solution.dto.jobapplication.ApplyJobResponse;
-import com.architecture.solution.dto.jobapplication.GetJobApplicationByCandidateIdResponse;
-import com.architecture.solution.dto.jobapplication.GetJobApplicationByJobIdResponse;
-import com.architecture.solution.dto.jobapplication.GetJobApplicationDetailResponse;
+import com.architecture.solution.dto.jobapplication.CandidateJobApplicationDetailResponse;
+import com.architecture.solution.dto.jobapplication.ApplyForJobResponse;
+import com.architecture.solution.dto.jobapplication.CandidateJobApplicationSummaryResponse;
+import com.architecture.solution.dto.jobapplication.RecruiterJobApplicationSummaryResponse;
+import com.architecture.solution.dto.jobapplication.RecruiterJobApplicationDetailResponse;
 import com.architecture.solution.entity.JobApplication;
+import org.springframework.security.access.AccessDeniedException;
 import com.architecture.solution.enums.ApplicationStatus;
 import com.architecture.solution.enums.JobStatus;
 import com.architecture.solution.exception.ResourceExistsException;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.JobApplicationRepository;
 import com.architecture.solution.repository.JobRepository;
-import com.architecture.solution.repository.projection.JobApplicationByCandidateId;
-import com.architecture.solution.repository.projection.JobApplicationByJobId;
-import com.architecture.solution.repository.projection.JobApplicationDetail;
+import com.architecture.solution.repository.projection.CandidateJobApplicationSummary;
+import com.architecture.solution.repository.projection.RecruiterJobApplicationSummary;
+import com.architecture.solution.repository.projection.RecruiterJobApplicationDetail;
+import com.architecture.solution.repository.projection.CandidateJobApplicationDetail;
 import com.architecture.solution.validator.JobOwnershipValidator;
 import com.architecture.solution.service.FileService;
 import com.architecture.solution.service.JobApplicationService;
@@ -41,7 +44,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
 
     @Override
     @Transactional
-    public ApplyJobResponse applyForJob(String jobId, MultipartFile cv) {
+    public ApplyForJobResponse applyForJob(String jobId, MultipartFile cv) {
         String candidateId = SecurityUtils.getUserId();
         if (!jobRepository.existsByIdAndStatusAndIsDeletedFalse(jobId, JobStatus.OPEN)) {
             throw new ResourceNotFoundException("Open job not found");
@@ -58,7 +61,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .status(ApplicationStatus.PENDING)
                 .build();
         jobApplicationRepository.save(jobApplication);
-        return ApplyJobResponse.builder()
+        return ApplyForJobResponse.builder()
                 .applicationId(jobApplication.getId())
                 .jobId(jobId)
                 .cvFileId(cvFileId)
@@ -68,22 +71,24 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     }
 
     @Override
-    public PageResponse<List<GetJobApplicationByJobIdResponse>> getJobApplications(String jobId, int page, int size) {
+    public PageResponse<List<RecruiterJobApplicationSummaryResponse>> getRecruiterJobApplicationSummaries(String jobId,
+                                                                                                          int page, int size) {
         jobOwnershipValidator.getOwnedJob(jobId);
-        Page<JobApplicationByJobId> applications = jobApplicationRepository.findJobApplicationByJobId(jobId,
-                PageUtils.getDefaultPageable(page, size));
-        return PageUtils.mapPageJobApplicationByJobIdToPageResponse(applications);
+        Page<RecruiterJobApplicationSummary> applications =
+                jobApplicationRepository.findRecruiterJobApplicationSummariesByJobId(jobId,
+                        PageUtils.getDefaultPageable(page, size));
+        return PageUtils.mapPageRecruiterJobApplicationSummaryToPageResponse(applications);
     }
 
     @Override
-    public GetJobApplicationDetailResponse getJobApplicationDetail(String applicationId) {
+    public RecruiterJobApplicationDetailResponse getRecruiterJobApplicationDetail(String applicationId) {
         JobApplication application = jobApplicationRepository.findByIdAndIsDeletedFalse(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job application not found"));
         jobOwnershipValidator.getOwnedJob(application.getJobId());
 
-        JobApplicationDetail detail = jobApplicationRepository.findJobApplicationDetailById(applicationId)
+        RecruiterJobApplicationDetail detail = jobApplicationRepository.findRecruiterJobApplicationDetailById(applicationId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job application details not found"));
-        return GetJobApplicationDetailResponse.builder()
+        return RecruiterJobApplicationDetailResponse.builder()
                 .id(detail.getId())
                 .jobId(detail.getJobId())
                 .candidateId(detail.getCandidateId())
@@ -99,9 +104,32 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     }
 
     @Override
-    public PageResponse<List<GetJobApplicationByCandidateIdResponse>> getApplicationList(int page, int size) {
+    public PageResponse<List<CandidateJobApplicationSummaryResponse>> getCandidateJobApplicationSummaries(int page, int size) {
         String candidateId = SecurityUtils.getUserId();
-        Page<JobApplicationByCandidateId> projection = jobApplicationRepository.getJobApplicationByCandidateId(candidateId, PageUtils.getDefaultPageable(page, size));
-        return PageUtils.mapPageJobApplicationByCandidateIdToPageResponse(projection);
+        Page<CandidateJobApplicationSummary> projection =
+                jobApplicationRepository.findCandidateJobApplicationSummariesByCandidateId(candidateId,
+                        PageUtils.getDefaultPageable(page, size));
+        return PageUtils.mapPageCandidateJobApplicationSummaryToPageResponse(projection);
     }
+
+    @Override
+    public CandidateJobApplicationDetailResponse getCandidateJobApplicationDetail(String id) {
+        String candidateId = SecurityUtils.getUserId();
+        CandidateJobApplicationDetail detail = jobApplicationRepository.findCandidateJobApplicationDetailById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Application not exist"));
+        if (!candidateId.equals(detail.getCandidateId())) {
+            throw new AccessDeniedException("You do not have permission to view this application");
+        }
+        return CandidateJobApplicationDetailResponse.builder()
+                .id(detail.getId())
+                .status(detail.getStatus())
+                .cvFileId(detail.getCvFileId())
+                .title(detail.getTitle())
+                .description(detail.getDescription())
+                .companyName(detail.getCompanyName())
+                .salaryMin(detail.getSalaryMin())
+                .salaryMax(detail.getSalaryMax())
+                .build();
+    }
+
 }
