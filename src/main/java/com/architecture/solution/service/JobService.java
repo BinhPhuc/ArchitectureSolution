@@ -1,6 +1,7 @@
 package com.architecture.solution.service;
 
 import com.architecture.solution.dto.common.PageResponse;
+import com.architecture.solution.dto.job.request.CreateJobRequest;
 import com.architecture.solution.dto.job.request.UpdateJobStatusRequest;
 import com.architecture.solution.dto.job.response.GetJobResponse;
 import com.architecture.solution.enums.JobStatus;
@@ -15,6 +16,8 @@ public interface JobService {
                                                   int page, int size);
 
     PageResponse<List<GetJobResponse>> findByRecruiterId(String recruiterId, int page, int size);
+
+    GetJobResponse createJob(CreateJobRequest request);
 
     GetJobResponse updateJobStatus(String jobId, UpdateJobStatusRequest request);
 
