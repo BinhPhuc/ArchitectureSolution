@@ -1,4 +1,4 @@
-package com.architecture.solution.config.properties;
+package com.architecture.solution.infrastructure.s3.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

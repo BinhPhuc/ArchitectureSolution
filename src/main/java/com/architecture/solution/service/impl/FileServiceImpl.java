@@ -9,7 +9,7 @@ import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.CandidateRepository;
 import com.architecture.solution.repository.FileRepository;
 import com.architecture.solution.service.FileService;
-import com.architecture.solution.service.S3ObjectService;
+import com.architecture.solution.infrastructure.s3.service.S3ObjectService;
 import com.architecture.solution.util.SecurityUtils;
 import com.architecture.solution.util.FileUtils;
 import lombok.RequiredArgsConstructor;
