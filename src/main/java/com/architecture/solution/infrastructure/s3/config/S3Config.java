@@ -1,6 +1,6 @@
-package com.architecture.solution.config;
+package com.architecture.solution.infrastructure.s3.config;
 
-import com.architecture.solution.config.properties.S3Properties;
+import com.architecture.solution.infrastructure.s3.properties.S3Properties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

@@ -1,7 +1,7 @@
-package com.architecture.solution.service.impl;
+package com.architecture.solution.infrastructure.s3.service.impl;
 
 import com.architecture.solution.exception.StorageException;
-import com.architecture.solution.service.S3ObjectService;
+import com.architecture.solution.infrastructure.s3.service.S3ObjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

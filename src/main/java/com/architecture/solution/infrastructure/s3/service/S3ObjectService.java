@@ -1,4 +1,4 @@
-package com.architecture.solution.service;
+package com.architecture.solution.infrastructure.s3.service;
 
 import org.springframework.web.multipart.MultipartFile;
 
