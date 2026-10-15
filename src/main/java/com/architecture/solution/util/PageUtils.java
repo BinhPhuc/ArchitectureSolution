@@ -3,11 +3,13 @@ package com.architecture.solution.util;
 import com.architecture.solution.dto.jobapplication.CandidateJobApplicationSummaryResponse;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.job.response.GetJobResponse;
+import com.architecture.solution.dto.job.response.RecruiterJobSummaryResponse;
 import com.architecture.solution.dto.jobapplication.RecruiterJobApplicationSummaryResponse;
 import com.architecture.solution.entity.Job;
 import com.architecture.solution.exception.InvalidArgumentException;
 import com.architecture.solution.repository.projection.CandidateJobApplicationSummary;
 import com.architecture.solution.repository.projection.RecruiterJobApplicationSummary;
+import com.architecture.solution.repository.projection.RecruiterJobSummary;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -94,6 +96,34 @@ public class PageUtils {
                 pageJobApplicationResponse.getContent();
         return PageResponse.
                 <List<RecruiterJobApplicationSummaryResponse>>builder()
+                .totalPage(totalPages)
+                .pageNum(pageNum)
+                .pageSize(pageSize)
+                .items(content)
+                .build();
+    }
+
+    public static PageResponse<List<RecruiterJobSummaryResponse>> mapPageRecruiterJobSummaryToPageResponse(Page<RecruiterJobSummary> pageJob) {
+        Page<RecruiterJobSummaryResponse> pageJobResponse = pageJob.map(job ->
+                RecruiterJobSummaryResponse.builder()
+                        .id(job.getId())
+                        .title(job.getTitle())
+                        .description(job.getDescription())
+                        .recruiterId(job.getRecruiterId())
+                        .salaryMin(job.getSalaryMin())
+                        .salaryMax(job.getSalaryMax())
+                        .status(job.getStatus())
+                        .jobType(job.getJobType())
+                        .createdAt(job.getCreatedAt())
+                        .applicationCount(job.getApplicationCount())
+                        .build()
+        );
+        int totalPages = pageJobResponse.getTotalPages();
+        int pageNum = pageJobResponse.getNumber() + 1;
+        int pageSize = pageJobResponse.getSize();
+        List<RecruiterJobSummaryResponse> content = pageJobResponse.getContent();
+        return PageResponse.
+                <List<RecruiterJobSummaryResponse>>builder()
                 .totalPage(totalPages)
                 .pageNum(pageNum)
                 .pageSize(pageSize)

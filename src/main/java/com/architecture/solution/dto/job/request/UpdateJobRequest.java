@@ -4,7 +4,6 @@ import com.architecture.solution.annotation.ValueOfEnum;
 import com.architecture.solution.enums.JobType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.math.BigDecimal;
