@@ -4,6 +4,7 @@ import com.architecture.solution.enums.RoleName;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 
 import java.util.Set;
@@ -29,6 +30,12 @@ public class RegisterRequest {
 
     @JsonProperty("displayed_name")
     private String displayedName;
+
+    @Pattern(regexp = "^\\d{9,15}$", message = "Phone must be 9-15 digits")
+    private String phone;
+
+    @JsonProperty("company_name")
+    private String companyName;
 
     @NotEmpty
     @JsonProperty("roles")

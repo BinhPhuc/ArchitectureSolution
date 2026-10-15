@@ -51,14 +51,4 @@ public class AuthController implements AuthApi {
         TokenResponse tokenResponse = authService.refreshToken(refreshTokenRequest);
         return ResponseEntity.ok(ApiResponse.success(tokenResponse, "Token refreshed successfully"));
     }
-
-    @Override
-    @PutMapping("/logout")
-    public ResponseEntity<ApiResponse<String>> logout(
-            @Valid @RequestBody RefreshTokenRequest request
-    ) {
-        log.info("Logging out user");
-        authService.logout(request);
-        return ResponseEntity.ok(ApiResponse.success(null, "User logged out successfully"));
-    }
 }
