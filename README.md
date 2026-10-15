@@ -18,9 +18,9 @@ HireMe is a backend service for a job marketplace. **Recruiters** publish job po
 
 | Role          | Capabilities                                                                                      |
 |---------------|---------------------------------------------------------------------------------------------------|
-| **Anyone**    | Register, log in, refresh tokens; search jobs; view a job, its categories and a recruiter profile |
-| **Candidate** | Manage profile and CV; apply to open jobs by uploading a PDF; track own applications              |
-| **Recruiter** | Create, update, close and delete own jobs; list and inspect applications for own jobs             |
+| **Anyone**    | Register, log in, refresh tokens; search jobs; view a job and the categories |
+| **Candidate** | Apply to open jobs by uploading a PDF CV                                                          |
+| **Recruiter** | Create jobs and change their status; list applications for own jobs                               |
 | **Admin**     | Seeded automatically on first start (see [Configuration](#configuration))                         |
 
 Highlights:
@@ -126,7 +126,6 @@ Base path: `/api/v1`. Full request/response schemas are available in Swagger UI.
 | POST   | `/auth/register` | Register a user with one or more roles  |
 | POST   | `/auth/login`    | Obtain access and refresh tokens        |
 | POST   | `/auth/refresh`  | Exchange a refresh token for new tokens |
-| PUT    | `/auth/logout`   | Invalidate the refresh token            |
 
 **Jobs**
 
@@ -135,9 +134,7 @@ Base path: `/api/v1`. Full request/response schemas are available in Swagger UI.
 | GET    | `/jobs`                | Public            | Search by `title`, `jobType`, `status`; paginated (`page`, `size`) |
 | GET    | `/jobs/{jobId}`        | Public            | Get one job                                                        |
 | POST   | `/jobs`                | Recruiter         | Create a job (starts as `OPEN`)                                    |
-| POST   | `/jobs/{jobId}`        | Recruiter (owner) | Partially update a job                                             |
 | POST   | `/jobs/{jobId}/status` | Recruiter         | Change status (`OPEN`, `FILLED`, `CLOSED`)                         |
-| DELETE | `/jobs/{jobId}`        | Recruiter         | Soft delete; `409` if it still has applications                    |
 
 **Applications**
 
@@ -145,21 +142,12 @@ Base path: `/api/v1`. Full request/response schemas are available in Swagger UI.
 |--------|------|--------|-------------|
 | POST | `/jobs/{jobId}/application` | Candidate | Apply to an open job with a PDF CV (multipart); one application per job |
 | GET | `/jobs/{jobId}/applications` | Recruiter (owner) | List applications for a job |
-| GET | `/applications/{applicationId}` | Recruiter (owner) | Application detail with candidate info |
-| GET | `/applications/me/{applicationId}` | Candidate | Own application detail |
-| GET | `/candidates/me/applications` | Candidate | List own applications |
 
-**Users, profiles and files**
+**Categories**
 
 | Method | Path | Access | Description |
 |--------|------|--------|-------------|
-| GET / POST | `/users/me` | Authenticated | View / update own profile |
-| POST | `/users/me/password` | Authenticated | Change password |
-| POST | `/candidates/me` | Candidate | Update candidate profile |
-| GET | `/recruiters/{recruiterId}` | Public | Public recruiter profile |
-| GET / POST | `/recruiters/me` | Recruiter | View / update own recruiter profile |
-| GET | `/categories` | Public | List job categories |
-| POST | `/files/upload/cv` | Candidate | Upload a default CV (PDF) |
+| GET | `/categories` | Public | List job categories with job count |
 
 Authenticate protected requests with `Authorization: Bearer <access_token>`.
 

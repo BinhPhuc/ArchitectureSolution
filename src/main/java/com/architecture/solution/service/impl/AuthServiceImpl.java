@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.Set;
 
@@ -49,6 +50,10 @@ public class AuthServiceImpl implements AuthService {
         Set<RoleName> roleNames = registerRequest.getRoles();
         if (roleNames == null || roleNames.isEmpty()) {
             throw new InvalidArgumentException("Roles are required");
+        }
+
+        if (roleNames.contains(RoleName.RECRUITER) && !StringUtils.hasText(registerRequest.getCompanyName())) {
+            throw new InvalidArgumentException("Company name is required for recruiters");
         }
 
         String password = registerRequest.getPassword();
@@ -90,11 +95,12 @@ public class AuthServiceImpl implements AuthService {
             if (roleName == RoleName.CANDIDATE) {
                 Candidate candidate = Candidate.builder()
                         .userId(user.getId())
+                        .phone(registerRequest.getPhone())
                         .build();
                 candidateRepository.save(candidate);
             } else if (roleName == RoleName.RECRUITER) {
                 recruiterRepository.save(Recruiter.builder()
-                        .companyName(registerRequest.getDisplayedName())
+                        .companyName(registerRequest.getCompanyName())
                         .userId(user.getId())
                         .build());
             }
@@ -161,25 +167,5 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(newRefreshToken)
                 .expiresAt(jwtUtil.extractExpiration(jwtUtil.extractAllClaims(newAccessToken)).toInstant())
                 .build();
-    }
-
-    @Override
-    @Transactional
-    public void logout(RefreshTokenRequest request) {
-        String refreshToken = request.getRefreshToken();
-        if (refreshToken == null || refreshToken.isEmpty()) {
-            throw new InvalidArgumentException("Refresh token is required");
-        }
-        Claims claims = jwtUtil.extractAllClaims(refreshToken);
-        if (!TokenType.REFRESH.name().equals(jwtUtil.extractType(claims))) {
-            throw new UnauthorizedException("Invalid token type");
-        }
-        User user = userRepository.findByRefreshToken(refreshToken)
-                .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
-        if (!jwtUtil.validateToken(claims, user.getUsername())) {
-            throw new UnauthorizedException("Invalid refresh token");
-        }
-        user.setRefreshToken(null);
-        userRepository.save(user);
     }
 }

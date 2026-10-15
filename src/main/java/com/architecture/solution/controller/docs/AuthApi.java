@@ -71,24 +71,4 @@ public interface AuthApi {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     )
     ResponseEntity<ApiResponse<TokenResponse>> refreshToken(RefreshTokenRequest refreshTokenRequest);
-
-    @Operation(
-            summary = "Logout user",
-            description = "Logout user by invalidating refresh token"
-    )
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "200",
-            description = "Logout successful"
-    )
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "400",
-            description = "Missing, invalid or non-refresh token",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-    )
-    @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Refresh token not found",
-            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
-    )
-    ResponseEntity<ApiResponse<String>> logout(RefreshTokenRequest request);
 }
