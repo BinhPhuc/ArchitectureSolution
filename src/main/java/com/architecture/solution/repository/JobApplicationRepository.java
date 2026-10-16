@@ -8,10 +8,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 
 @Repository
 public interface JobApplicationRepository extends JpaRepository<JobApplication, String> {
     boolean existsByJobIdAndCandidateId(String jobId, String candidateId);
+
+    Optional<JobApplication> findByIdAndIsDeletedFalse(String id);
 
     @Query("""
                 SELECT new com.architecture.solution.repository.projection.RecruiterJobApplicationSummary(

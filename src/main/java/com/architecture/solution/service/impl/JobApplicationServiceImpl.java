@@ -4,6 +4,8 @@ import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.file.response.FileUploadResponse;
 import com.architecture.solution.dto.jobapplication.ApplyForJobResponse;
 import com.architecture.solution.dto.jobapplication.RecruiterJobApplicationSummaryResponse;
+import com.architecture.solution.dto.jobapplication.UpdateApplicationStatusRequest;
+import com.architecture.solution.dto.jobapplication.UpdateApplicationStatusResponse;
 import com.architecture.solution.entity.JobApplication;
 import com.architecture.solution.enums.ApplicationStatus;
 import com.architecture.solution.enums.JobStatus;
@@ -71,5 +73,26 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 jobApplicationRepository.findRecruiterJobApplicationSummariesByJobId(jobId,
                         PageUtils.getDefaultPageable(page, size));
         return PageUtils.mapPageRecruiterJobApplicationSummaryToPageResponse(applications);
+    }
+
+    @Override
+    @Transactional
+    public UpdateApplicationStatusResponse updateApplicationStatus(String applicationId,
+                                                                   UpdateApplicationStatusRequest request) {
+        JobApplication application = jobApplicationRepository.findByIdAndIsDeletedFalse(applicationId)
+                .orElseThrow(() -> new ResourceNotFoundException("Job application not found"));
+        jobOwnershipValidator.getOwnedJob(application.getJobId());
+
+        application.setStatus(ApplicationStatus.valueOf(request.getStatus()));
+        JobApplication updatedApplication = jobApplicationRepository.saveAndFlush(application);
+
+        return UpdateApplicationStatusResponse.builder()
+                .applicationId(updatedApplication.getId())
+                .candidateId(updatedApplication.getCandidateId())
+                .jobId(updatedApplication.getJobId())
+                .status(updatedApplication.getStatus())
+                .cvFileId(updatedApplication.getCvFileId())
+                .lastModifiedAt(updatedApplication.getLastModifiedAt())
+                .build();
     }
 }

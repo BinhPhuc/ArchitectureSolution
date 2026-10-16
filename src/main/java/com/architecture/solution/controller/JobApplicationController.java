@@ -5,7 +5,10 @@ import com.architecture.solution.dto.common.ApiResponse;
 import com.architecture.solution.dto.common.PageResponse;
 import com.architecture.solution.dto.jobapplication.ApplyForJobResponse;
 import com.architecture.solution.dto.jobapplication.RecruiterJobApplicationSummaryResponse;
+import com.architecture.solution.dto.jobapplication.UpdateApplicationStatusRequest;
+import com.architecture.solution.dto.jobapplication.UpdateApplicationStatusResponse;
 import com.architecture.solution.service.JobApplicationService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -43,5 +46,16 @@ public class JobApplicationController implements JobApplicationApi {
     ) {
         PageResponse<List<RecruiterJobApplicationSummaryResponse>> response = jobApplicationService.getRecruiterJobApplicationSummaries(jobId, page, size);
         return ResponseEntity.ok(ApiResponse.success(response, "Job applications retrieved successfully"));
+    }
+
+    @Override
+    @PreAuthorize("hasRole('RECRUITER')")
+    @PutMapping("/applications/{applicationId}/status")
+    public ResponseEntity<ApiResponse<UpdateApplicationStatusResponse>> updateApplicationStatus(
+            @PathVariable String applicationId,
+            @Valid @RequestBody UpdateApplicationStatusRequest request
+    ) {
+        UpdateApplicationStatusResponse response = jobApplicationService.updateApplicationStatus(applicationId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "Application status updated successfully"));
     }
 }
