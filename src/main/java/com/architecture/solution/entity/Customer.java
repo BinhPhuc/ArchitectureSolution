@@ -9,18 +9,15 @@ import lombok.*;
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "candidates")
-public class Candidate extends BaseEntity {
+@Table(name = "customers")
+public class Customer extends BaseEntity {
     @Id
     @Column(name = "user_id", length = 36)
     private String userId;
 
-    @Column(name = "bio", columnDefinition = "TEXT")
-    private String bio;
-
-    @Column(name = "cv_file_id", length = 36, unique = true)
-    private String cvFileId;
-
     @Column(name = "phone")
     private String phone;
+
+    @Column(name = "shipping_address")
+    private String shippingAddress;
 }

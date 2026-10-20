@@ -37,8 +37,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
-    private final CandidateRepository candidateRepository;
-    private final RecruiterRepository recruiterRepository;
+    private final CustomerRepository customerRepository;
+    private final SellerRepository sellerRepository;
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtil;
@@ -52,8 +52,8 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidArgumentException("Roles are required");
         }
 
-        if (roleNames.contains(RoleName.RECRUITER) && !StringUtils.hasText(registerRequest.getCompanyName())) {
-            throw new InvalidArgumentException("Company name is required for recruiters");
+        if (roleNames.contains(RoleName.SELLER) && !StringUtils.hasText(registerRequest.getShopName())) {
+            throw new InvalidArgumentException("Shop name is required for sellers");
         }
 
         String password = registerRequest.getPassword();
@@ -92,15 +92,16 @@ public class AuthServiceImpl implements AuthService {
                     .build();
             userRoleRepository.save(userRole);
 
-            if (roleName == RoleName.CANDIDATE) {
-                Candidate candidate = Candidate.builder()
+            if (roleName == RoleName.CUSTOMER) {
+                Customer customer = Customer.builder()
                         .userId(user.getId())
                         .phone(registerRequest.getPhone())
+                        .shippingAddress(registerRequest.getShippingAddress())
                         .build();
-                candidateRepository.save(candidate);
-            } else if (roleName == RoleName.RECRUITER) {
-                recruiterRepository.save(Recruiter.builder()
-                        .companyName(registerRequest.getCompanyName())
+                customerRepository.save(customer);
+            } else if (roleName == RoleName.SELLER) {
+                sellerRepository.save(Seller.builder()
+                        .shopName(registerRequest.getShopName())
                         .userId(user.getId())
                         .build());
             }

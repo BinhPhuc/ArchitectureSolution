@@ -16,7 +16,7 @@ public class BucketInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        log.info("Initializing S3 bucket: {}", BucketConstant.CV_BUCKET);
-        s3BucketService.createBucket(BucketConstant.CV_BUCKET);
+        log.info("Initializing S3 bucket: {}", BucketConstant.PRODUCT_IMAGE_BUCKET);
+        s3BucketService.createBucket(BucketConstant.PRODUCT_IMAGE_BUCKET);
     }
 }

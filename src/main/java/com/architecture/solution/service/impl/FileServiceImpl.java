@@ -2,17 +2,17 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.constant.BucketConstant;
 import com.architecture.solution.dto.file.response.FileUploadResponse;
-import com.architecture.solution.entity.Candidate;
 import com.architecture.solution.entity.File;
 import com.architecture.solution.enums.FileStatus;
-import com.architecture.solution.exception.ResourceNotFoundException;
-import com.architecture.solution.repository.CandidateRepository;
-import com.architecture.solution.repository.FileRepository;
-import com.architecture.solution.service.FileService;
 import com.architecture.solution.infrastructure.s3.service.S3ObjectService;
-import com.architecture.solution.util.SecurityUtils;
+import com.architecture.solution.repository.FileRepository;
+import com.architecture.solution.repository.SellerRepository;
+import com.architecture.solution.service.FileService;
 import com.architecture.solution.util.FileUtils;
+import com.architecture.solution.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,48 +22,39 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class FileServiceImpl implements FileService {
-    private static final String CV_BUCKET = BucketConstant.CV_BUCKET;
     private final S3ObjectService s3ObjectService;
     private final FileRepository fileRepository;
-    private final CandidateRepository candidateRepository;
+    private final SellerRepository sellerRepository;
 
     @Override
     @Transactional
-    public FileUploadResponse uploadCV(MultipartFile file, boolean applyJob) {
+    @PreAuthorize("hasRole('SELLER')")
+    public FileUploadResponse uploadProductImage(MultipartFile file) {
         String userId = SecurityUtils.getUserId();
-        Candidate candidate = candidateRepository.findByUserIdAndIsDeletedFalse(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Candidate not found"));
-        FileUtils.validatePdf(file);
-        String originalFilename = file.getOriginalFilename();
-        String contentType = file.getContentType();
-        long sizeBytes = file.getSize();
-        String idempotencyKey = UUID.randomUUID().toString();
-        String objectKey = new StringBuilder().append(userId).append("/").append(idempotencyKey).toString();
-        s3ObjectService.putObject(CV_BUCKET, objectKey, file);
-        File newFile = File.builder()
-                .bucket(CV_BUCKET)
+        sellerRepository.findById(userId)
+                .filter(seller -> !Boolean.TRUE.equals(seller.getIsDeleted()))
+                .orElseThrow(() -> new AccessDeniedException("An active seller profile is required"));
+        FileUtils.validateImage(file);
+        String bucket = BucketConstant.PRODUCT_IMAGE_BUCKET;
+        String objectKey = userId + "/" + UUID.randomUUID();
+        s3ObjectService.putObject(bucket, objectKey, file);
+        File savedFile = fileRepository.save(File.builder()
+                .bucket(bucket)
                 .objectKey(objectKey)
-                .originalFilename(originalFilename)
-                .contentType(contentType)
-                .sizeBytes(sizeBytes)
+                .originalFilename(file.getOriginalFilename())
+                .contentType(file.getContentType())
+                .sizeBytes(file.getSize())
                 .status(FileStatus.READY)
                 .ownerId(userId)
-                .build();
-        fileRepository.save(newFile);
-        String cvFileId = newFile.getId();
-        if (!applyJob) {
-            candidate.setCvFileId(cvFileId);
-            candidateRepository.save(candidate);
-        }
-        return FileUploadResponse
-                .builder()
-                .id(cvFileId)
-                .bucket(CV_BUCKET)
-                .objectKey(objectKey)
-                .originalFilename(originalFilename)
-                .contentType(contentType)
-                .sizeBytes(sizeBytes)
-                .status(FileStatus.READY)
+                .build());
+        return FileUploadResponse.builder()
+                .id(savedFile.getId())
+                .bucket(savedFile.getBucket())
+                .objectKey(savedFile.getObjectKey())
+                .originalFilename(savedFile.getOriginalFilename())
+                .contentType(savedFile.getContentType())
+                .sizeBytes(savedFile.getSizeBytes())
+                .status(savedFile.getStatus())
                 .build();
     }
 }

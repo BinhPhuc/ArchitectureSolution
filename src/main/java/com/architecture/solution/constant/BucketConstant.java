@@ -4,5 +4,5 @@ public final class BucketConstant {
     private BucketConstant() {
     }
 
-    public static final String CV_BUCKET = "hireme-cv";
+    public static final String PRODUCT_IMAGE_BUCKET = "product-images";
 }

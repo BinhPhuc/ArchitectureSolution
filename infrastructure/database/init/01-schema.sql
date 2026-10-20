@@ -1,49 +1,62 @@
-CREATE DATABASE IF NOT EXISTS hire_me DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS ecommerce DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-USE hire_me;
+USE ecommerce;
 
 CREATE TABLE `users` (
   `id` varchar(36) PRIMARY KEY,
-  `email` varchar(255) UNIQUE NOT NULL,
-  `username` varchar(255) UNIQUE NOT NULL,
+  `email` varchar(255) NOT NULL UNIQUE,
+  `username` varchar(255) NOT NULL UNIQUE,
   `password_hash` varchar(255) NOT NULL,
   `displayed_name` varchar(255),
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false
+  `refresh_token` varchar(255) UNIQUE,
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false
 );
 
 CREATE TABLE `roles` (
   `id` varchar(36) PRIMARY KEY,
-  `name` ENUM ('ADMIN', 'RECRUITER', 'CANDIDATE') UNIQUE NOT NULL,
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false
+  `name` enum ('ADMIN', 'SELLER', 'CUSTOMER') NOT NULL UNIQUE,
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false
 );
 
 CREATE TABLE `user_roles` (
   `id` varchar(36) PRIMARY KEY,
   `user_id` varchar(36) NOT NULL,
   `role_id` varchar(36) NOT NULL,
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false,
+  UNIQUE KEY `uk_user_roles` (`user_id`, `role_id`)
 );
 
-CREATE TABLE `recruiters` (
+CREATE TABLE `customers` (
   `user_id` varchar(36) PRIMARY KEY,
-  `company_name` varchar(255) NOT NULL,
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false
+  `phone` varchar(255),
+  `shipping_address` varchar(255),
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false
+);
+
+CREATE TABLE `sellers` (
+  `user_id` varchar(36) PRIMARY KEY,
+  `shop_name` varchar(255) NOT NULL,
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false
 );
 
 CREATE TABLE `files` (
@@ -53,109 +66,103 @@ CREATE TABLE `files` (
   `original_filename` varchar(255) NOT NULL,
   `content_type` varchar(255) NOT NULL,
   `size_bytes` bigint NOT NULL,
-  `status` ENUM ('PENDING', 'READY', 'FAILED', 'DELETING') NOT NULL DEFAULT 'PENDING',
+  `status` enum ('PENDING', 'READY', 'FAILED', 'DELETING') NOT NULL DEFAULT 'PENDING',
   `owner_id` varchar(36) NOT NULL,
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false
 );
 
-CREATE TABLE `candidates` (
-  `user_id` varchar(36) PRIMARY KEY,
-  `bio` text,
-  `cv_file_id` varchar(36) UNIQUE,
-  `phone` varchar(255),
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false
-);
-
-CREATE TABLE `jobs` (
+CREATE TABLE `products` (
   `id` varchar(36) PRIMARY KEY,
-  `title` varchar(255) NOT NULL,
+  `name` varchar(255),
   `description` text,
-  `recruiter_id` varchar(36) NOT NULL,
-  `salary_min` decimal(12,2),
-  `salary_max` decimal(12,2),
-  `status` ENUM ('OPEN', 'FILLED', 'CLOSED') NOT NULL DEFAULT 'OPEN',
-  `job_type` ENUM ('PART_TIME', 'FULL_TIME') NOT NULL,
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false,
-  CHECK ((salary_min IS NULL AND salary_max IS NULL) OR (salary_min IS NOT NULL
-        AND salary_max IS NOT NULL
-        AND salary_min >= 0
-        AND salary_min <= salary_max))
+  `seller_id` varchar(36),
+  `status` enum ('DRAFT', 'ACTIVE', 'INACTIVE', 'OUT_OF_STOCK', 'ARCHIVED'),
+  `price` decimal(19,2),
+  `stock` bigint NOT NULL DEFAULT 0,
+  `units_sold` bigint NOT NULL,
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false
 );
 
-CREATE TABLE `job_applications` (
+CREATE TABLE `campaigns` (
   `id` varchar(36) PRIMARY KEY,
-  `candidate_id` varchar(36) NOT NULL,
-  `job_id` varchar(36) NOT NULL,
-  `status` ENUM ('PENDING', 'ACCEPTED', 'REJECTED') NOT NULL DEFAULT 'PENDING',
-  `cv_file_id` varchar(36) NOT NULL,
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false
+  `name` varchar(255),
+  `description` text,
+  `started_at` timestamp(6) NOT NULL,
+  `ended_at` timestamp(6) NOT NULL,
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false
 );
 
-CREATE TABLE `categories` (
+CREATE TABLE `campaign_items` (
   `id` varchar(36) PRIMARY KEY,
-  `name` varchar(255) UNIQUE NOT NULL,
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false
+  `campaign_id` varchar(36),
+  `product_id` varchar(36),
+  `price` decimal(19,2),
+  `stock` bigint NOT NULL,
+  `sold_quantity` bigint NOT NULL,
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false,
+  UNIQUE KEY `uk_flash_sale_items_product` (`campaign_id`, `product_id`)
 );
 
-CREATE TABLE `job_categories` (
+CREATE TABLE `orders` (
   `id` varchar(36) PRIMARY KEY,
-  `job_id` varchar(36) NOT NULL,
-  `category_id` varchar(36) NOT NULL,
-  `created_at` timestamp NOT NULL,
-  `created_by` varchar(36) NOT NULL,
-  `last_modified_at` timestamp NOT NULL,
-  `last_modified_by` varchar(36) NOT NULL,
-  `is_deleted` boolean NOT NULL DEFAULT false
+  `user_id` varchar(36),
+  `total_amount` decimal(19,2),
+  `status` enum ('PENDING', 'PREPARED', 'SHIPPED', 'DELIVERED', 'CANCELED'),
+  `payment_method` enum ('COD', 'BANK_TRANSFER', 'CREDIT_CARD', 'E_WALLET'),
+  `idempotency_key` varchar(36) UNIQUE,
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false
 );
 
-CREATE UNIQUE INDEX `user_roles_index_0` ON `user_roles` (`user_id`, `role_id`);
+CREATE TABLE `order_items` (
+  `id` varchar(36) PRIMARY KEY,
+  `order_id` varchar(36),
+  `product_id` varchar(36),
+  `quantity` int NOT NULL,
+  `created_at` timestamp(6) NOT NULL,
+  `created_by` varchar(255) NOT NULL,
+  `last_modified_at` timestamp(6) NULL,
+  `last_modified_by` varchar(255),
+  `is_deleted` boolean DEFAULT false
+);
 
-CREATE UNIQUE INDEX `job_applications_index_1` ON `job_applications` (`job_id`, `candidate_id`);
+ALTER TABLE `user_roles` ADD CONSTRAINT `fk_user_roles_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
-CREATE UNIQUE INDEX `job_categories_index_2` ON `job_categories` (`job_id`, `category_id`);
+ALTER TABLE `user_roles` ADD CONSTRAINT `fk_user_roles_role_id` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
 
-ALTER TABLE `recruiters` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `customers` ADD CONSTRAINT `fk_customers_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
-ALTER TABLE `user_roles` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `sellers` ADD CONSTRAINT `fk_sellers_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
-ALTER TABLE `user_roles` ADD FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
+ALTER TABLE `products` ADD CONSTRAINT `fk_products_seller_id` FOREIGN KEY (`seller_id`) REFERENCES `sellers` (`user_id`);
 
-ALTER TABLE `candidates` ADD FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+ALTER TABLE `campaign_items` ADD CONSTRAINT `fk_campaign_items_campaign_id` FOREIGN KEY (`campaign_id`) REFERENCES `campaigns` (`id`);
 
-ALTER TABLE `candidates` ADD FOREIGN KEY (`cv_file_id`) REFERENCES `files` (`id`);
+ALTER TABLE `campaign_items` ADD CONSTRAINT `fk_campaign_items_product_id` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 
-ALTER TABLE `jobs` ADD FOREIGN KEY (`recruiter_id`) REFERENCES `recruiters` (`user_id`);
+ALTER TABLE `orders` ADD CONSTRAINT `fk_orders_user_id` FOREIGN KEY (`user_id`) REFERENCES `customers` (`user_id`);
 
-ALTER TABLE `job_applications` ADD FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`);
+ALTER TABLE `order_items` ADD CONSTRAINT `fk_order_items_order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
 
-ALTER TABLE `job_applications` ADD FOREIGN KEY (`candidate_id`) REFERENCES `candidates` (`user_id`);
+ALTER TABLE `order_items` ADD CONSTRAINT `fk_order_items_product_id` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`);
 
-ALTER TABLE `job_applications` ADD FOREIGN KEY (`cv_file_id`) REFERENCES `files` (`id`);
-
-ALTER TABLE `job_categories` ADD FOREIGN KEY (`job_id`) REFERENCES `jobs` (`id`);
-
-ALTER TABLE `job_categories` ADD FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`);
-
-ALTER TABLE `files` ADD FOREIGN KEY (`owner_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `users` ADD COLUMN `refresh_token` varchar(255) UNIQUE;
+ALTER TABLE `files` ADD CONSTRAINT `fk_files_owner_id` FOREIGN KEY (`owner_id`) REFERENCES `sellers` (`user_id`);
