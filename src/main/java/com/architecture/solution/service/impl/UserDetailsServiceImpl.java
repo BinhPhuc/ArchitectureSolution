@@ -2,7 +2,6 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.entity.User;
 import com.architecture.solution.repository.UserRepository;
-import com.architecture.solution.repository.UserRoleRepository;
 import com.architecture.solution.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -18,17 +17,13 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
     private final UserRepository userRepository;
-    private final UserRoleRepository userRoleRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        User user = userRepository.findByUsernameAndIsDeletedFalse(username)
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
-        List<GrantedAuthority> authorities =
-                userRoleRepository.findRoleNamesByUserId(user.getId()).stream()
-                        .map(roleName -> (GrantedAuthority) new SimpleGrantedAuthority("ROLE_" + roleName.name()))
-                        .toList();
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
 
         return CustomUserDetails.builder()
                 .user(user)

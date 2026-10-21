@@ -28,13 +28,6 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
     }
 
-    @ExceptionHandler(ResourceConflictException.class)
-    public ResponseEntity<ErrorResponse> handleResourceConflictException(ResourceConflictException ex,
-                                                                        HttpServletRequest request) {
-        return ErrorResponseUtils.toResponseEntity(
-                HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
-    }
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex,
                                                                     HttpServletRequest request) {
@@ -104,12 +97,6 @@ public class GlobalExceptionHandler {
                                                                      HttpServletRequest request) {
         return ErrorResponseUtils.toResponseEntity(
                 HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI());
-    }
-
-    @ExceptionHandler(BucketNotEmptyException.class)
-    public ResponseEntity<ErrorResponse> handleBucketNotEmptyException(BucketNotEmptyException ex, HttpServletRequest request) {
-        return ErrorResponseUtils.toResponseEntity(
-                HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
     }
 
     @ExceptionHandler(IllegalFileException.class)

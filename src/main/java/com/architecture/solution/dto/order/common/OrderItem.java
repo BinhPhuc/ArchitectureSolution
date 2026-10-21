@@ -9,11 +9,8 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class OrderItem {
-    @JsonProperty("product_id")
-    private String productId;
-
-    @JsonProperty("variant_id")
-    private String variantId;
+    @JsonProperty("campaign_item_id")
+    private String campaignItemId;
 
     @JsonProperty("quantity")
     private Integer quantity;

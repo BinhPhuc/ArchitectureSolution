@@ -4,7 +4,6 @@ import com.architecture.solution.constant.BucketConstant;
 import com.architecture.solution.entity.File;
 import com.architecture.solution.entity.Seller;
 import com.architecture.solution.entity.User;
-import com.architecture.solution.enums.FileStatus;
 import com.architecture.solution.exception.IllegalFileException;
 import com.architecture.solution.infrastructure.s3.initializer.BucketInitializer;
 import com.architecture.solution.infrastructure.s3.service.S3BucketService;
@@ -71,28 +70,23 @@ class FileServiceImplTests {
             return savedFile;
         });
 
-        var response = fileService.uploadProductImage(file);
+        var response = fileService.uploadItemImage(file);
 
         var metadata = ArgumentCaptor.forClass(File.class);
         verify(fileRepository).save(metadata.capture());
         assertEquals("seller-id", metadata.getValue().getOwnerId());
-        assertEquals(FileStatus.READY, response.getStatus());
         assertEquals("file-id", response.getId());
-        assertEquals("image/png", response.getContentType());
-        assertEquals(file.getSize(), response.getSizeBytes());
+        assertEquals("image/png", metadata.getValue().getContentType());
+        assertEquals(file.getSize(), metadata.getValue().getSizeBytes());
         assertTrue(response.getObjectKey().startsWith("seller-id/"));
-        verify(s3ObjectService).putObject(BucketConstant.PRODUCT_IMAGE_BUCKET, response.getObjectKey(), file);
+        verify(s3ObjectService).putObject(BucketConstant.ITEM_IMAGE_BUCKET, response.getObjectKey(), file);
     }
 
     @Test
-    void rejectsMissingOrDeletedSellerBeforeUploading() throws Exception {
+    void rejectsMissingSellerBeforeUploading() throws Exception {
         var file = image();
         when(sellerRepository.findById("seller-id")).thenReturn(Optional.empty());
-        assertThrows(AccessDeniedException.class, () -> fileService.uploadProductImage(file));
-        Seller deletedSeller = Seller.builder().userId("seller-id").build();
-        deletedSeller.setIsDeleted(true);
-        when(sellerRepository.findById("seller-id")).thenReturn(Optional.of(deletedSeller));
-        assertThrows(AccessDeniedException.class, () -> fileService.uploadProductImage(file));
+        assertThrows(AccessDeniedException.class, () -> fileService.uploadItemImage(file));
         verifyNoInteractions(s3ObjectService, fileRepository);
     }
 
@@ -100,7 +94,7 @@ class FileServiceImplTests {
     void rejectsInvalidImageBeforeUploading() {
         when(sellerRepository.findById("seller-id")).thenReturn(Optional.of(Seller.builder().userId("seller-id").build()));
         var invalid = new MockMultipartFile("file", "image.png", "image/png", "invalid".getBytes());
-        assertThrows(IllegalFileException.class, () -> fileService.uploadProductImage(invalid));
+        assertThrows(IllegalFileException.class, () -> fileService.uploadItemImage(invalid));
         verifyNoInteractions(s3ObjectService, fileRepository);
     }
 
@@ -119,20 +113,20 @@ class FileServiceImplTests {
     void acceptsReadableJpegImage() throws Exception {
         var output = new ByteArrayOutputStream();
         ImageIO.write(new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB), "jpeg", output);
-        var file = new MockMultipartFile("file", "product.jpg", "image/jpeg", output.toByteArray());
+        var file = new MockMultipartFile("file", "item.jpg", "image/jpeg", output.toByteArray());
         assertDoesNotThrow(() -> FileUtils.validateImage(file));
     }
 
     @Test
-    void initializesProductImageBucket() throws Exception {
+    void initializesItemImageBucket() throws Exception {
         S3BucketService buckets = mock(S3BucketService.class);
         new BucketInitializer(buckets).run(null);
-        verify(buckets).createBucket(BucketConstant.PRODUCT_IMAGE_BUCKET);
+        verify(buckets).createBucket(BucketConstant.ITEM_IMAGE_BUCKET);
     }
 
     private MockMultipartFile image() throws Exception {
         var output = new ByteArrayOutputStream();
         ImageIO.write(new BufferedImage(2, 2, BufferedImage.TYPE_INT_RGB), "png", output);
-        return new MockMultipartFile("file", "product.png", "image/png", output.toByteArray());
+        return new MockMultipartFile("file", "item.png", "image/png", output.toByteArray());
     }
 }

@@ -15,7 +15,7 @@ import java.util.List;
 public interface FlashSaleApi {
     ResponseEntity<ApiResponse<CreateCampaignResponse>> createCampaign(CreateCampaignRequest request);
 
-    ResponseEntity<ApiResponse<List<GetCampaignItemResponse>>> getProductsByCampaignId(String campaignId);
+    ResponseEntity<ApiResponse<List<GetCampaignItemResponse>>> getItemsByCampaignId(String campaignId);
 
     ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(CreateOrderRequest createOrderRequest, String campaignId);
 }

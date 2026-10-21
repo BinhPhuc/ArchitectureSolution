@@ -6,11 +6,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User, String> {
-    boolean existsByEmailAndIsDeletedFalse(String email);
+    boolean existsByEmail(String email);
 
-    boolean existsByUsernameAndIsDeletedFalse(String username);
+    boolean existsByUsername(String username);
     
-    Optional<User> findByUsernameAndIsDeletedFalse(String username);
+    Optional<User> findByUsername(String username);
 
-    Optional<User> findByRefreshTokenAndIsDeletedFalse(String refreshToken);
+    Optional<User> findByRefreshToken(String refreshToken);
 }

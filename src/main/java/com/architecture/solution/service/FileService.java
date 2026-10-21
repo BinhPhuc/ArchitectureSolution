@@ -4,5 +4,5 @@ import com.architecture.solution.dto.file.response.FileUploadResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface FileService {
-    FileUploadResponse uploadProductImage(MultipartFile file);
+    FileUploadResponse uploadItemImage(MultipartFile file);
 }

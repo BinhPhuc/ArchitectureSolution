@@ -3,7 +3,6 @@ package com.architecture.solution.service.impl;
 import com.architecture.solution.constant.BucketConstant;
 import com.architecture.solution.dto.file.response.FileUploadResponse;
 import com.architecture.solution.entity.File;
-import com.architecture.solution.enums.FileStatus;
 import com.architecture.solution.infrastructure.s3.service.S3ObjectService;
 import com.architecture.solution.repository.FileRepository;
 import com.architecture.solution.repository.SellerRepository;
@@ -28,33 +27,23 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('SELLER')")
-    public FileUploadResponse uploadProductImage(MultipartFile file) {
+    public FileUploadResponse uploadItemImage(MultipartFile file) {
         String userId = SecurityUtils.getUserId();
         sellerRepository.findById(userId)
-                .filter(seller -> !Boolean.TRUE.equals(seller.getIsDeleted()))
-                .orElseThrow(() -> new AccessDeniedException("An active seller profile is required"));
+                .orElseThrow(() -> new AccessDeniedException("A seller profile is required"));
         FileUtils.validateImage(file);
-        String bucket = BucketConstant.PRODUCT_IMAGE_BUCKET;
         String objectKey = userId + "/" + UUID.randomUUID();
-        s3ObjectService.putObject(bucket, objectKey, file);
+        s3ObjectService.putObject(BucketConstant.ITEM_IMAGE_BUCKET, objectKey, file);
         File savedFile = fileRepository.save(File.builder()
-                .bucket(bucket)
                 .objectKey(objectKey)
                 .originalFilename(file.getOriginalFilename())
                 .contentType(file.getContentType())
                 .sizeBytes(file.getSize())
-                .status(FileStatus.READY)
                 .ownerId(userId)
                 .build());
         return FileUploadResponse.builder()
                 .id(savedFile.getId())
-                .bucket(savedFile.getBucket())
                 .objectKey(savedFile.getObjectKey())
-                .originalFilename(savedFile.getOriginalFilename())
-                .contentType(savedFile.getContentType())
-                .sizeBytes(savedFile.getSizeBytes())
-                .status(savedFile.getStatus())
                 .build();
     }
 }

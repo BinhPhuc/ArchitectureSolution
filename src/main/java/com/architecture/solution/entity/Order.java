@@ -1,7 +1,6 @@
 package com.architecture.solution.entity;
 
 import com.architecture.solution.enums.OrderStatus;
-import com.architecture.solution.enums.PaymentMethod;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -41,8 +40,4 @@ public class Order extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method")
-    private PaymentMethod paymentMethod;
 }

@@ -6,7 +6,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
 
 import java.math.BigDecimal;
 
@@ -21,9 +20,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-@Table(name = "campaign_items", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_flash_sale_items_product", columnNames = {"campaign_id", "product_id"})
-})
+@Table(name = "campaign_items")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class CampaignItem extends BaseEntity {
@@ -35,15 +32,14 @@ public class CampaignItem extends BaseEntity {
     @Column(name = "campaign_id", length = 36)
     private String campaignId;
 
-    @Column(name = "product_id", length = 36)
-    private String productId;
+    private String name;
+
+    @Column(name = "thumbnail_id", length = 36)
+    private String thumbnailId;
 
     @Column(name = "price", precision = 19, scale = 2)
     private BigDecimal price;
 
     @Column(name = "stock", nullable = false)
     private Long stock;
-
-    @Column(name = "sold_quantity", nullable = false)
-    private Long soldQuantity;
 }

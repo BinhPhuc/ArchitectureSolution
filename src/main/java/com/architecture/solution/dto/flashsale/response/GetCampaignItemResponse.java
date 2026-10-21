@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -14,22 +13,15 @@ import java.util.Map;
 public class GetCampaignItemResponse {
     private String id;
 
-    @JsonProperty("product_id")
-    private String productId;
+    @JsonProperty("campaign_id")
+    private String campaignId;
 
-    @JsonProperty("variant_id")
-    private String variantId;
+    private String name;
+
+    @JsonProperty("thumbnail_id")
+    private String thumbnailId;
 
     private BigDecimal price;
 
     private Long stock;
-
-    @JsonProperty("sold_quantity")
-    private Long soldQuantity;
-
-    private String productName;
-
-    private String description;
-
-    private Map<String, String> variants;
 }
