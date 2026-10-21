@@ -18,7 +18,7 @@ CREATE TABLE `users` (
 
 CREATE TABLE `roles` (
   `id` varchar(36) PRIMARY KEY,
-  `name` enum ('ADMIN', 'SELLER', 'CUSTOMER') NOT NULL UNIQUE,
+  `name` enum ('SELLER', 'CUSTOMER') NOT NULL UNIQUE,
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
@@ -78,7 +78,6 @@ CREATE TABLE `files` (
 CREATE TABLE `products` (
   `id` varchar(36) PRIMARY KEY,
   `name` varchar(255),
-  `description` text,
   `seller_id` varchar(36),
   `status` enum ('DRAFT', 'ACTIVE', 'INACTIVE', 'OUT_OF_STOCK', 'ARCHIVED'),
   `price` decimal(19,2),
@@ -95,8 +94,8 @@ CREATE TABLE `campaigns` (
   `id` varchar(36) PRIMARY KEY,
   `name` varchar(255),
   `description` text,
-  `started_at` timestamp(6) NOT NULL,
-  `ended_at` timestamp(6) NOT NULL,
+  `start_at` timestamp(6) NOT NULL,
+  `end_at` timestamp(6) NOT NULL,
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
@@ -125,7 +124,6 @@ CREATE TABLE `orders` (
   `total_amount` decimal(19,2),
   `status` enum ('PENDING', 'PREPARED', 'SHIPPED', 'DELIVERED', 'CANCELED'),
   `payment_method` enum ('COD', 'BANK_TRANSFER', 'CREDIT_CARD', 'E_WALLET'),
-  `idempotency_key` varchar(36) UNIQUE,
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
