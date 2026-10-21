@@ -13,8 +13,7 @@ CREATE TABLE `users` (
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false
+  `last_modified_by` varchar(255)
 );
 
 CREATE TABLE `customers` (
@@ -24,8 +23,7 @@ CREATE TABLE `customers` (
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false
+  `last_modified_by` varchar(255)
 );
 
 CREATE TABLE `sellers` (
@@ -34,24 +32,20 @@ CREATE TABLE `sellers` (
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false
+  `last_modified_by` varchar(255)
 );
 
 CREATE TABLE `files` (
   `id` varchar(36) PRIMARY KEY,
-  `bucket` varchar(255) NOT NULL,
   `object_key` varchar(1024) NOT NULL,
   `original_filename` varchar(255) NOT NULL,
   `content_type` varchar(255) NOT NULL,
   `size_bytes` bigint NOT NULL,
-  `status` enum ('PENDING', 'READY', 'FAILED', 'DELETING') NOT NULL DEFAULT 'PENDING',
   `owner_id` varchar(36) NOT NULL,
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false
+  `last_modified_by` varchar(255)
 );
 
 CREATE TABLE `campaigns` (
@@ -64,8 +58,7 @@ CREATE TABLE `campaigns` (
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false
+  `last_modified_by` varchar(255)
 );
 
 CREATE TABLE `campaign_items` (
@@ -78,8 +71,7 @@ CREATE TABLE `campaign_items` (
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false
+  `last_modified_by` varchar(255)
 );
 
 CREATE TABLE `orders` (
@@ -90,8 +82,7 @@ CREATE TABLE `orders` (
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false
+  `last_modified_by` varchar(255)
 );
 
 CREATE TABLE `order_items` (
@@ -102,8 +93,7 @@ CREATE TABLE `order_items` (
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false
+  `last_modified_by` varchar(255)
 );
 
 ALTER TABLE `customers` ADD CONSTRAINT `fk_customers_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);

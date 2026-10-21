@@ -99,12 +99,6 @@ public class GlobalExceptionHandler {
                 HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI());
     }
 
-    @ExceptionHandler(BucketNotEmptyException.class)
-    public ResponseEntity<ErrorResponse> handleBucketNotEmptyException(BucketNotEmptyException ex, HttpServletRequest request) {
-        return ErrorResponseUtils.toResponseEntity(
-                HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
-    }
-
     @ExceptionHandler(IllegalFileException.class)
     public ResponseEntity<ErrorResponse> handleIllegalFileException(IllegalFileException ex, HttpServletRequest request) {
         return ErrorResponseUtils.toResponseEntity(

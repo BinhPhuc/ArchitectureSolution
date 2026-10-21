@@ -57,10 +57,10 @@ public class AuthServiceImpl implements AuthService {
         if (!password.equals(retypePassword)) {
             throw new InvalidArgumentException("Passwords do not match");
         }
-        if (userRepository.existsByUsernameAndIsDeletedFalse(registerRequest.getUsername())) {
+        if (userRepository.existsByUsername(registerRequest.getUsername())) {
             throw new ResourceExistsException("User with username " + registerRequest.getUsername() + " already exists");
         }
-        if (userRepository.existsByEmailAndIsDeletedFalse(registerRequest.getEmail())) {
+        if (userRepository.existsByEmail(registerRequest.getEmail())) {
             throw new ResourceExistsException("User with email " + registerRequest.getEmail() + " already exists");
         }
         String encodedPassword = passwordEncoder.encode(password);
@@ -131,7 +131,7 @@ public class AuthServiceImpl implements AuthService {
         if (!TokenType.REFRESH.name().equals(jwtUtil.extractType(claims))) {
             throw new UnauthorizedException("Invalid token type");
         }
-        User user = userRepository.findByRefreshTokenAndIsDeletedFalse(refreshToken)
+        User user = userRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
         if (!jwtUtil.validateToken(claims, user.getUsername())) {
             throw new UnauthorizedException("Invalid refresh token");

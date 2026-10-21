@@ -1,6 +1,5 @@
 package com.architecture.solution.entity;
 
-import com.architecture.solution.enums.FileStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -17,9 +16,6 @@ public class File extends BaseEntity {
     @Column(length = 36)
     private String id;
 
-    @Column(name = "bucket", nullable = false)
-    private String bucket;
-
     @Column(name = "object_key", nullable = false, length = 1024)
     private String objectKey;
 
@@ -31,11 +27,6 @@ public class File extends BaseEntity {
 
     @Column(name = "size_bytes", nullable = false)
     private Long sizeBytes;
-
-    @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
-    private FileStatus status = FileStatus.PENDING;
 
     @Column(name = "owner_id", length = 36, nullable = false)
     private String ownerId;

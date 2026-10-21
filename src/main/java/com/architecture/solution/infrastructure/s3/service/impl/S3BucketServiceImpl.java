@@ -1,7 +1,5 @@
 package com.architecture.solution.infrastructure.s3.service.impl;
 
-import com.architecture.solution.exception.BucketNotEmptyException;
-import com.architecture.solution.exception.StorageException;
 import com.architecture.solution.infrastructure.s3.service.S3BucketService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,25 +23,7 @@ public class S3BucketServiceImpl implements S3BucketService {
         }
     }
 
-    @Override
-    public void deleteBucket(String bucketName) {
-        if (isBucketExists(bucketName)) {
-            try {
-                s3Client.deleteBucket(DeleteBucketRequest.builder().bucket(bucketName).build());
-            } catch (S3Exception exception) {
-                if (exception.awsErrorDetails() != null
-                        && "BucketNotEmpty".equals(exception.awsErrorDetails().errorCode())) {
-                    throw new BucketNotEmptyException(String.format("Bucket %s is not empty", bucketName), exception);
-                }
-                throw new StorageException("Failed to delete storage bucket", exception);
-            }
-        } else {
-            log.info("S3 bucket does not exist: {}", bucketName);
-        }
-    }
-
-    @Override
-    public boolean isBucketExists(String bucketName) {
+    private boolean isBucketExists(String bucketName) {
         try {
             s3Client.headBucket(HeadBucketRequest.builder().bucket(bucketName).build());
             return true;

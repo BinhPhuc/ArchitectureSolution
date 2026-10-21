@@ -4,7 +4,6 @@ import com.architecture.solution.constant.BucketConstant;
 import com.architecture.solution.entity.File;
 import com.architecture.solution.entity.Seller;
 import com.architecture.solution.entity.User;
-import com.architecture.solution.enums.FileStatus;
 import com.architecture.solution.exception.IllegalFileException;
 import com.architecture.solution.infrastructure.s3.initializer.BucketInitializer;
 import com.architecture.solution.infrastructure.s3.service.S3BucketService;
@@ -76,22 +75,17 @@ class FileServiceImplTests {
         var metadata = ArgumentCaptor.forClass(File.class);
         verify(fileRepository).save(metadata.capture());
         assertEquals("seller-id", metadata.getValue().getOwnerId());
-        assertEquals(FileStatus.READY, response.getStatus());
         assertEquals("file-id", response.getId());
-        assertEquals("image/png", response.getContentType());
-        assertEquals(file.getSize(), response.getSizeBytes());
+        assertEquals("image/png", metadata.getValue().getContentType());
+        assertEquals(file.getSize(), metadata.getValue().getSizeBytes());
         assertTrue(response.getObjectKey().startsWith("seller-id/"));
         verify(s3ObjectService).putObject(BucketConstant.ITEM_IMAGE_BUCKET, response.getObjectKey(), file);
     }
 
     @Test
-    void rejectsMissingOrDeletedSellerBeforeUploading() throws Exception {
+    void rejectsMissingSellerBeforeUploading() throws Exception {
         var file = image();
         when(sellerRepository.findById("seller-id")).thenReturn(Optional.empty());
-        assertThrows(AccessDeniedException.class, () -> fileService.uploadItemImage(file));
-        Seller deletedSeller = Seller.builder().userId("seller-id").build();
-        deletedSeller.setIsDeleted(true);
-        when(sellerRepository.findById("seller-id")).thenReturn(Optional.of(deletedSeller));
         assertThrows(AccessDeniedException.class, () -> fileService.uploadItemImage(file));
         verifyNoInteractions(s3ObjectService, fileRepository);
     }

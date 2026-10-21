@@ -49,7 +49,7 @@ Cấu hình datasource bằng `SPRING_DATASOURCE_URL` (database `ecommerce`), `S
 
 Đăng ký sử dụng `role` (một trong `SELLER`, `CUSTOMER`), `displayed_name`, `retype_password`; customer có `phone`, `shipping_address`; seller cần `shop_name`. Mỗi user chỉ có một vai trò, lưu trực tiếp ở cột `users.role`.
 
-Upload cần Bearer token có vai trò `SELLER` và hồ sơ seller còn hoạt động. Giới hạn multipart hiện tại: 10 MB mỗi file. API trả về ID file, bucket, object key và metadata; metadata lưu trong bảng `files`, nội dung ảnh lưu trên S3/RustFS. ID file trả về được truyền vào `thumbnail_id` của từng item khi tạo campaign. Không seed metadata ảnh giả khi chưa có object thực tế.
+Upload cần Bearer token có vai trò `SELLER` và hồ sơ seller còn hoạt động. Giới hạn multipart hiện tại: 10 MB mỗi file. API trả về ID file và object key; metadata lưu trong bảng `files`, nội dung ảnh lưu trên S3/RustFS. ID file trả về được truyền vào `thumbnail_id` của từng item khi tạo campaign. Không seed metadata ảnh giả khi chưa có object thực tế.
 
 Bucket initializer dùng cấu hình S3 hiện có, tạo bucket khi chưa tồn tại. Cần S3/RustFS hoạt động khi khởi động ứng dụng.
 
