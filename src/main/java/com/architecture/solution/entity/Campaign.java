@@ -39,4 +39,7 @@ public class Campaign extends BaseEntity {
 
     @Column(name = "end_at", nullable = false)
     private Instant endAt;
+
+    @Column(name = "seller_id", length = 36)
+    private String sellerId;
 }

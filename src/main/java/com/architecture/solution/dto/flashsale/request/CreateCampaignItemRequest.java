@@ -14,9 +14,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateCampaignItemRequest {
-    @JsonProperty("product_id")
     @NotEmpty
-    private String productId;
+    private String name;
 
     @NotNull
     @Positive

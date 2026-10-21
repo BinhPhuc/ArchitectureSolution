@@ -22,20 +22,16 @@ INSERT INTO `customers` (`user_id`, `phone`, `shipping_address`, `created_at`, `
 VALUES
   ('00000000-0000-0000-0000-000000000003', '0901234567', 'Ho Chi Minh City', @seed_now, 'system', @seed_now, 'system', FALSE);
 
-INSERT INTO `products` (`id`, `name`, `seller_id`, `status`, `price`, `stock`, `units_sold`, `created_at`, `created_by`, `last_modified_at`, `last_modified_by`, `is_deleted`)
-VALUES
-  ('00000000-0000-0000-0000-000000000020', 'Wireless Headphones', '00000000-0000-0000-0000-000000000002', 'ACTIVE', 1000000, 100, 0, @seed_now, 'system', @seed_now, 'system', FALSE);
-
 SET @campaign_start = DATE_ADD(@seed_now, INTERVAL 1 DAY);
 
 SET @campaign_end = DATE_ADD(@campaign_start, INTERVAL 2 HOUR);
 
-INSERT INTO `campaigns` (`id`, `name`, `description`, `start_at`, `end_at`, `created_at`, `created_by`, `last_modified_at`, `last_modified_by`, `is_deleted`)
+INSERT INTO `campaigns` (`id`, `name`, `description`, `start_at`, `end_at`, `seller_id`, `created_at`, `created_by`, `last_modified_at`, `last_modified_by`, `is_deleted`)
 VALUES
-  ('00000000-0000-0000-0000-000000000030', 'Daily Flash Sale', 'Upcoming demo campaign', @campaign_start, @campaign_end, @seed_now, 'system', @seed_now, 'system', FALSE);
+  ('00000000-0000-0000-0000-000000000030', 'Daily Flash Sale', 'Upcoming demo campaign', @campaign_start, @campaign_end, '00000000-0000-0000-0000-000000000002', @seed_now, 'system', @seed_now, 'system', FALSE);
 
-INSERT INTO `campaign_items` (`id`, `campaign_id`, `product_id`, `price`, `stock`, `sold_quantity`, `created_at`, `created_by`, `last_modified_at`, `last_modified_by`, `is_deleted`)
+INSERT INTO `campaign_items` (`id`, `campaign_id`, `name`, `thumbnail_id`, `price`, `stock`, `created_at`, `created_by`, `last_modified_at`, `last_modified_by`, `is_deleted`)
 VALUES
-  ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000030', '00000000-0000-0000-0000-000000000020', 700000, 20, 0, @seed_now, 'system', @seed_now, 'system', FALSE);
+  ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000030', 'Wireless Headphones', NULL, 700000, 20, @seed_now, 'system', @seed_now, 'system', FALSE);
 
 COMMIT;

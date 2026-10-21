@@ -29,8 +29,8 @@ public class FlashSaleController implements FlashSaleApi {
     }
 
     @Override
-    @GetMapping("/campaign/{campaignId}/products")
-    public ResponseEntity<ApiResponse<List<GetCampaignItemResponse>>> getProductsByCampaignId(
+    @GetMapping("/campaign/{campaignId}/items")
+    public ResponseEntity<ApiResponse<List<GetCampaignItemResponse>>> getItemsByCampaignId(
             @PathVariable String campaignId
     ) {
         return null;

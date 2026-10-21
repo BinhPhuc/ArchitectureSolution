@@ -29,8 +29,8 @@ public class OrderItem extends BaseEntity {
     @Column(name = "order_id", length = 36)
     private String orderId;
 
-    @Column(name = "product_id", length = 36)
-    private String productId;
+    @Column(name = "campaign_item_id", length = 36)
+    private String campaignItemId;
 
     @Column(nullable = false)
     private Integer quantity;
