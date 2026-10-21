@@ -47,4 +47,10 @@ public class Product extends BaseEntity {
 
     @Column(name = "units_sold", nullable = false)
     private Long unitsSold;
+
+    @Column(name = "user_id", length = 36)
+    private String userId;
+
+    @Column(name = "thumbnail_id", length = 36)
+    private String thumbnailId;
 }

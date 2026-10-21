@@ -83,6 +83,8 @@ CREATE TABLE `products` (
   `price` decimal(19,2),
   `stock` bigint NOT NULL DEFAULT 0,
   `units_sold` bigint NOT NULL,
+  `user_id` varchar(36),
+  `thumbnail_id` varchar(36),
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
@@ -152,6 +154,10 @@ ALTER TABLE `customers` ADD CONSTRAINT `fk_customers_user_id` FOREIGN KEY (`user
 ALTER TABLE `sellers` ADD CONSTRAINT `fk_sellers_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 ALTER TABLE `products` ADD CONSTRAINT `fk_products_seller_id` FOREIGN KEY (`seller_id`) REFERENCES `sellers` (`user_id`);
+
+ALTER TABLE `products` ADD CONSTRAINT `fk_products_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+ALTER TABLE `products` ADD CONSTRAINT `fk_products_thumbnail_id` FOREIGN KEY (`thumbnail_id`) REFERENCES `files` (`id`);
 
 ALTER TABLE `campaign_items` ADD CONSTRAINT `fk_campaign_items_campaign_id` FOREIGN KEY (`campaign_id`) REFERENCES `campaigns` (`id`);
 
