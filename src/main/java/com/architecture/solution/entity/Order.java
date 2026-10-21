@@ -45,7 +45,4 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method")
     private PaymentMethod paymentMethod;
-
-    @Column(name = "idempotency_key", length = 36, unique = true)
-    private String idempotencyKey;
 }

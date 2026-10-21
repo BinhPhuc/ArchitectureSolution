@@ -61,31 +61,22 @@ public class AuthServiceImpl implements AuthService {
         if (!password.equals(retypePassword)) {
             throw new InvalidArgumentException("Passwords do not match");
         }
-        if (userRepository.existsByUsername(registerRequest.getUsername())) {
+        if (userRepository.existsByUsernameAndIsDeletedFalse(registerRequest.getUsername())) {
             throw new ResourceExistsException("User with username " + registerRequest.getUsername() + " already exists");
         }
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new ResourceExistsException("User with email " + registerRequest.getEmail() +
-                    " already exists");
+        if (userRepository.existsByEmailAndIsDeletedFalse(registerRequest.getEmail())) {
+            throw new ResourceExistsException("User with email " + registerRequest.getEmail() + " already exists");
         }
         String encodedPassword = passwordEncoder.encode(password);
-        userRepository.save(User.builder()
+        User user = userRepository.save(User.builder()
                 .username(registerRequest.getUsername())
                 .passwordHash(encodedPassword)
                 .email(registerRequest.getEmail())
-                .displayedName(registerRequest.getDisplayedName())
+                .displayedName(registerRequest.getUsername())
                 .build());
 
-        User user = userRepository.findByUsername(registerRequest.getUsername())
-                .orElseThrow(() -> new IllegalStateException("User not found after " +
-                        "registration"));
-
         for (RoleName roleName : roleNames) {
-            if (roleName == RoleName.ADMIN) {
-                throw new AccessDeniedException("Cannot register as ADMIN");
-            }
-            Role role = roleRepository.findByName(roleName)
-                    .orElseThrow(() -> new IllegalStateException("Role not found"));
+            Role role = roleRepository.findByName(roleName).orElseThrow(() -> new IllegalStateException("Role not found"));
             UserRole userRole = UserRole.builder()
                     .userId(user.getId())
                     .roleId(role.getId())

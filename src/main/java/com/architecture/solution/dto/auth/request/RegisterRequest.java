@@ -28,9 +28,6 @@ public class RegisterRequest {
     @JsonProperty("retype_password")
     private String retypePassword;
 
-    @JsonProperty("displayed_name")
-    private String displayedName;
-
     @Pattern(regexp = "^\\d{9,15}$", message = "Phone must be 9-15 digits")
     private String phone;
 

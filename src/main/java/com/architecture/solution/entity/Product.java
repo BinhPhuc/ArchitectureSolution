@@ -32,9 +32,6 @@ public class Product extends BaseEntity {
 
     private String name;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     @Column(name = "seller_id", length = 36)
     private String sellerId;
 

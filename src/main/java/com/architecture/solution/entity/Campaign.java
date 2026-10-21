@@ -34,9 +34,9 @@ public class Campaign extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "started_at", nullable = false)
-    private Instant startedAt;
+    @Column(name = "start_at", nullable = false)
+    private Instant startAt;
 
-    @Column(name = "ended_at", nullable = false)
-    private Instant endedAt;
+    @Column(name = "end_at", nullable = false)
+    private Instant endAt;
 }
