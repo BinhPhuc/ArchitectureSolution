@@ -8,34 +8,13 @@ CREATE TABLE `users` (
   `username` varchar(255) NOT NULL UNIQUE,
   `password_hash` varchar(255) NOT NULL,
   `displayed_name` varchar(255),
+  `role` enum ('SELLER', 'CUSTOMER') NOT NULL,
   `refresh_token` varchar(255) UNIQUE,
   `created_at` timestamp(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
   `last_modified_at` timestamp(6) NULL,
   `last_modified_by` varchar(255),
   `is_deleted` boolean DEFAULT false
-);
-
-CREATE TABLE `roles` (
-  `id` varchar(36) PRIMARY KEY,
-  `name` enum ('SELLER', 'CUSTOMER') NOT NULL UNIQUE,
-  `created_at` timestamp(6) NOT NULL,
-  `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false
-);
-
-CREATE TABLE `user_roles` (
-  `id` varchar(36) PRIMARY KEY,
-  `user_id` varchar(36) NOT NULL,
-  `role_id` varchar(36) NOT NULL,
-  `created_at` timestamp(6) NOT NULL,
-  `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
-  `last_modified_by` varchar(255),
-  `is_deleted` boolean DEFAULT false,
-  UNIQUE KEY `uk_user_roles` (`user_id`, `role_id`)
 );
 
 CREATE TABLE `customers` (
@@ -126,10 +105,6 @@ CREATE TABLE `order_items` (
   `last_modified_by` varchar(255),
   `is_deleted` boolean DEFAULT false
 );
-
-ALTER TABLE `user_roles` ADD CONSTRAINT `fk_user_roles_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
-
-ALTER TABLE `user_roles` ADD CONSTRAINT `fk_user_roles_role_id` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
 
 ALTER TABLE `customers` ADD CONSTRAINT `fk_customers_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 

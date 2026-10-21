@@ -4,15 +4,10 @@ SET @seed_now = NOW();
 
 START TRANSACTION;
 
-INSERT INTO `users` (`id`, `email`, `username`, `password_hash`, `displayed_name`, `created_at`, `created_by`, `last_modified_at`, `last_modified_by`, `is_deleted`)
+INSERT INTO `users` (`id`, `email`, `username`, `password_hash`, `displayed_name`, `role`, `created_at`, `created_by`, `last_modified_at`, `last_modified_by`, `is_deleted`)
 VALUES
-  ('00000000-0000-0000-0000-000000000002', 'seller01@ecommerce.test', 'seller01', '$2a$10$enNdLp5SbpoixE2do4MOd.fnadT2lahAu/.STUzKSksB3NmawNyJu', 'Lotus Shop', @seed_now, 'system', @seed_now, 'system', FALSE),
-  ('00000000-0000-0000-0000-000000000003', 'customer01@ecommerce.test', 'customer01', '$2a$10$enNdLp5SbpoixE2do4MOd.fnadT2lahAu/.STUzKSksB3NmawNyJu', 'Demo Customer', @seed_now, 'system', @seed_now, 'system', FALSE);
-
-INSERT INTO `user_roles` (`id`, `user_id`, `role_id`, `created_at`, `created_by`, `last_modified_at`, `last_modified_by`, `is_deleted`)
-SELECT UUID(), u.id, r.id, @seed_now, 'system', @seed_now, 'system', FALSE
-FROM `users` u
-JOIN `roles` r ON r.name = CASE u.username WHEN 'seller01' THEN 'SELLER' ELSE 'CUSTOMER' END;
+  ('00000000-0000-0000-0000-000000000002', 'seller01@ecommerce.test', 'seller01', '$2a$10$enNdLp5SbpoixE2do4MOd.fnadT2lahAu/.STUzKSksB3NmawNyJu', 'Lotus Shop', 'SELLER', @seed_now, 'system', @seed_now, 'system', FALSE),
+  ('00000000-0000-0000-0000-000000000003', 'customer01@ecommerce.test', 'customer01', '$2a$10$enNdLp5SbpoixE2do4MOd.fnadT2lahAu/.STUzKSksB3NmawNyJu', 'Demo Customer', 'CUSTOMER', @seed_now, 'system', @seed_now, 'system', FALSE);
 
 INSERT INTO `sellers` (`user_id`, `shop_name`, `created_at`, `created_by`, `last_modified_at`, `last_modified_by`, `is_deleted`)
 VALUES

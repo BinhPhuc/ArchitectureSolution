@@ -1,5 +1,6 @@
 package com.architecture.solution.entity;
 
+import com.architecture.solution.enums.RoleName;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,10 @@ public class User extends BaseEntity {
 
     @Column(name = "displayed_name")
     private String displayedName;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false)
+    private RoleName role;
 
     @Column(name = "refresh_token", unique = true)
     private String refreshToken;

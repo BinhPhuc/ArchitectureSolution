@@ -17,6 +17,9 @@ public class CreateCampaignItemRequest {
     @NotEmpty
     private String name;
 
+    @JsonProperty("thumbnail_id")
+    private String thumbnailId;
+
     @NotNull
     @Positive
     private BigDecimal price;

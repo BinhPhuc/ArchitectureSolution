@@ -28,14 +28,13 @@ public class FileServiceImpl implements FileService {
 
     @Override
     @Transactional
-    @PreAuthorize("hasRole('SELLER')")
-    public FileUploadResponse uploadProductImage(MultipartFile file) {
+    public FileUploadResponse uploadItemImage(MultipartFile file) {
         String userId = SecurityUtils.getUserId();
         sellerRepository.findById(userId)
                 .filter(seller -> !Boolean.TRUE.equals(seller.getIsDeleted()))
                 .orElseThrow(() -> new AccessDeniedException("An active seller profile is required"));
         FileUtils.validateImage(file);
-        String bucket = BucketConstant.PRODUCT_IMAGE_BUCKET;
+        String bucket = BucketConstant.ITEM_IMAGE_BUCKET;
         String objectKey = userId + "/" + UUID.randomUUID();
         s3ObjectService.putObject(bucket, objectKey, file);
         File savedFile = fileRepository.save(File.builder()

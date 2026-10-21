@@ -1,13 +1,12 @@
 package com.architecture.solution.dto.auth.request;
 
+import com.architecture.solution.annotation.ValueOfEnum;
 import com.architecture.solution.enums.RoleName;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
-
-import java.util.Set;
 
 @Builder
 @Getter
@@ -37,7 +36,8 @@ public class RegisterRequest {
     @JsonProperty("shipping_address")
     private String shippingAddress;
 
-    @NotEmpty
-    @JsonProperty("roles")
-    private Set<RoleName> roles;
+    @NotNull
+    @ValueOfEnum(enumClass = RoleName.class, message = "Role must be one of: CUSTOMER, SELLER")
+    @JsonProperty("role")
+    private String role;
 }
