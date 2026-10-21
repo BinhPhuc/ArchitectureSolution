@@ -28,14 +28,14 @@ public class RegisterRequest {
     @JsonProperty("retype_password")
     private String retypePassword;
 
-    @JsonProperty("displayed_name")
-    private String displayedName;
-
     @Pattern(regexp = "^\\d{9,15}$", message = "Phone must be 9-15 digits")
     private String phone;
 
-    @JsonProperty("company_name")
-    private String companyName;
+    @JsonProperty("shop_name")
+    private String shopName;
+
+    @JsonProperty("shipping_address")
+    private String shippingAddress;
 
     @NotEmpty
     @JsonProperty("roles")

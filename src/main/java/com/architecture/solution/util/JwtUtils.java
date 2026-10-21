@@ -26,7 +26,7 @@ public class JwtUtils {
 
     public String generateAccessToken(User user) {
         Map<String, String> claims = new HashMap<>();
-        claims.put("type", TokenType.ACCESS.toString());
+        claims.put("type", TokenType.ACCESS.name());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getUsername())
@@ -37,7 +37,7 @@ public class JwtUtils {
 
     public String generateRefreshToken(User user, Instant refreshTokenExpirationDate) {
         Map<String, String> claims = new HashMap<>();
-        claims.put("type", TokenType.REFRESH.toString());
+        claims.put("type", TokenType.REFRESH.name());
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(user.getUsername())

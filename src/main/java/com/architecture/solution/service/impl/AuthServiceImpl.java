@@ -37,8 +37,8 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
-    private final CandidateRepository candidateRepository;
-    private final RecruiterRepository recruiterRepository;
+    private final CustomerRepository customerRepository;
+    private final SellerRepository sellerRepository;
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtil;
@@ -52,8 +52,8 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidArgumentException("Roles are required");
         }
 
-        if (roleNames.contains(RoleName.RECRUITER) && !StringUtils.hasText(registerRequest.getCompanyName())) {
-            throw new InvalidArgumentException("Company name is required for recruiters");
+        if (roleNames.contains(RoleName.SELLER) && !StringUtils.hasText(registerRequest.getShopName())) {
+            throw new InvalidArgumentException("Shop name is required for sellers");
         }
 
         String password = registerRequest.getPassword();
@@ -61,46 +61,38 @@ public class AuthServiceImpl implements AuthService {
         if (!password.equals(retypePassword)) {
             throw new InvalidArgumentException("Passwords do not match");
         }
-        if (userRepository.existsByUsername(registerRequest.getUsername())) {
+        if (userRepository.existsByUsernameAndIsDeletedFalse(registerRequest.getUsername())) {
             throw new ResourceExistsException("User with username " + registerRequest.getUsername() + " already exists");
         }
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new ResourceExistsException("User with email " + registerRequest.getEmail() +
-                    " already exists");
+        if (userRepository.existsByEmailAndIsDeletedFalse(registerRequest.getEmail())) {
+            throw new ResourceExistsException("User with email " + registerRequest.getEmail() + " already exists");
         }
         String encodedPassword = passwordEncoder.encode(password);
-        userRepository.save(User.builder()
+        User user = userRepository.save(User.builder()
                 .username(registerRequest.getUsername())
                 .passwordHash(encodedPassword)
                 .email(registerRequest.getEmail())
-                .displayedName(registerRequest.getDisplayedName())
+                .displayedName(registerRequest.getUsername())
                 .build());
 
-        User user = userRepository.findByUsername(registerRequest.getUsername())
-                .orElseThrow(() -> new IllegalStateException("User not found after " +
-                        "registration"));
-
         for (RoleName roleName : roleNames) {
-            if (roleName == RoleName.ADMIN) {
-                throw new AccessDeniedException("Cannot register as ADMIN");
-            }
-            Role role = roleRepository.findByName(roleName)
-                    .orElseThrow(() -> new IllegalStateException("Role not found"));
+            Role role = roleRepository.findByName(roleName).orElseThrow(() -> new IllegalStateException("Role not found"));
             UserRole userRole = UserRole.builder()
                     .userId(user.getId())
                     .roleId(role.getId())
                     .build();
             userRoleRepository.save(userRole);
 
-            if (roleName == RoleName.CANDIDATE) {
-                Candidate candidate = Candidate.builder()
+            if (roleName == RoleName.CUSTOMER) {
+                Customer customer = Customer.builder()
                         .userId(user.getId())
                         .phone(registerRequest.getPhone())
+                        .shippingAddress(registerRequest.getShippingAddress())
                         .build();
-                candidateRepository.save(candidate);
-            } else if (roleName == RoleName.RECRUITER) {
-                recruiterRepository.save(Recruiter.builder()
-                        .companyName(registerRequest.getCompanyName())
+                customerRepository.save(customer);
+            } else if (roleName == RoleName.SELLER) {
+                sellerRepository.save(Seller.builder()
+                        .shopName(registerRequest.getShopName())
                         .userId(user.getId())
                         .build());
             }
