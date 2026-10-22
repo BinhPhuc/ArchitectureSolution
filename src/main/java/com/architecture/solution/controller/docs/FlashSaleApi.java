@@ -17,5 +17,5 @@ public interface FlashSaleApi {
 
     ResponseEntity<ApiResponse<List<GetCampaignItemResponse>>> getItemsByCampaignId(String campaignId);
 
-    ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(CreateOrderRequest createOrderRequest, String campaignId);
+    ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(CreateOrderRequest createOrderRequest);
 }

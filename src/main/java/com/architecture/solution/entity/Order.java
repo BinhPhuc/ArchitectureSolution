@@ -32,8 +32,8 @@ public class Order extends BaseEntity {
     @Column(length = 36)
     private String id;
 
-    @Column(name = "user_id", length = 36)
-    private String userId;
+    @Column(name = "customer_id", length = 36)
+    private String customerId;
 
     @Column(name = "total_amount", precision = 19, scale = 2)
     private BigDecimal totalAmount;

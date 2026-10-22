@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,11 +41,11 @@ public class FlashSaleController implements FlashSaleApi {
     }
 
     @Override
-    @PostMapping("/campaign/{campaignId}/order")
+    @PostMapping("/campaign/order")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(
-            @Valid @RequestBody CreateOrderRequest createOrderRequest,
-            @PathVariable String campaignId
+            @Valid @RequestBody CreateOrderRequest createOrderRequest
     ) {
-        return null;
+        return ResponseEntity.ok(ApiResponse.success(flashSaleService.createOrder(createOrderRequest), "Order created successfully"));
     }
 }

@@ -17,3 +17,7 @@ spring:
     hibernate:
       ddl-auto: validate
     show-sql: true
+
+payment:
+  gateway-url: http://localhost:3001
+  timeout: 5000
