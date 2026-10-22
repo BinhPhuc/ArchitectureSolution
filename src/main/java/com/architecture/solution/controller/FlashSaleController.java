@@ -7,6 +7,7 @@ import com.architecture.solution.dto.flashsale.response.CreateCampaignResponse;
 import com.architecture.solution.dto.flashsale.response.GetCampaignItemResponse;
 import com.architecture.solution.dto.order.request.CreateOrderRequest;
 import com.architecture.solution.dto.order.response.CreateOrderResponse;
+import com.architecture.solution.service.FlashSaleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +21,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/flash-sales")
 public class FlashSaleController implements FlashSaleApi {
+    private final FlashSaleService flashSaleService;
+
     @Override
     @PostMapping("/campaign/create")
     public ResponseEntity<ApiResponse<CreateCampaignResponse>> createCampaign(
@@ -33,7 +36,7 @@ public class FlashSaleController implements FlashSaleApi {
     public ResponseEntity<ApiResponse<List<GetCampaignItemResponse>>> getItemsByCampaignId(
             @PathVariable String campaignId
     ) {
-        return null;
+        return ResponseEntity.ok(ApiResponse.success(flashSaleService.getItemsByCampaignId(campaignId)));
     }
 
     @Override
