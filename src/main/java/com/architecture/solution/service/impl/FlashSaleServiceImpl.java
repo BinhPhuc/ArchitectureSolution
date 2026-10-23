@@ -1,22 +1,81 @@
 package com.architecture.solution.service.impl;
 
+import com.architecture.solution.client.payment.PaymentClient;
+import com.architecture.solution.client.payment.dto.request.PaymentRequest;
 import com.architecture.solution.dto.flashsale.response.GetCampaignItemResponse;
+import com.architecture.solution.dto.order.request.CreateOrderRequest;
+import com.architecture.solution.dto.order.response.CreateOrderResponse;
+import com.architecture.solution.entity.CampaignItem;
+import com.architecture.solution.entity.Order;
+import com.architecture.solution.entity.OrderItem;
+import com.architecture.solution.enums.OrderStatus;
+import com.architecture.solution.exception.OutOfStockException;
+import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.CampaignItemRepository;
+import com.architecture.solution.repository.OrderItemRepository;
+import com.architecture.solution.repository.OrderRepository;
 import com.architecture.solution.service.FlashSaleService;
+import com.architecture.solution.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class FlashSaleServiceImpl implements FlashSaleService {
     private final CampaignItemRepository campaignItemRepository;
+    private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final PaymentClient paymentClient;
 
     @Override
     public List<GetCampaignItemResponse> getItemsByCampaignId(String campaignId) {
         return campaignItemRepository.findAllByCampaignId(campaignId).stream()
                 .map(GetCampaignItemResponse::toResponse)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public CreateOrderResponse createOrder(CreateOrderRequest request) {
+        String customerId = SecurityUtils.getUserId();
+        final BigDecimal[] totalAmount = {BigDecimal.ZERO};
+        List<OrderItem> orderItems = new ArrayList<>();
+        request.getItems().forEach(item -> {
+            CampaignItem campaignItem = campaignItemRepository.findById(item.getCampaignItemId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Campaign item not found"));
+            Long stock = campaignItem.getStock();
+            Integer quantity = item.getQuantity();
+            if (stock < quantity) {
+                throw new OutOfStockException("Not enough stock");
+            }
+            campaignItem.setStock(stock - quantity);
+            totalAmount[0] = totalAmount[0].add(campaignItem.getPrice().multiply(BigDecimal.valueOf(quantity)));
+            orderItems.add(OrderItem.builder()
+                    .campaignItemId(item.getCampaignItemId())
+                    .quantity(item.getQuantity())
+                    .build());
+        });
+        Order newOrder = Order
+                .builder()
+                .customerId(customerId)
+                .totalAmount(totalAmount[0])
+                .status(OrderStatus.PENDING)
+                .build();
+        Order savedOrder = orderRepository.save(newOrder);
+        orderItems.forEach(item -> item.setOrderId(savedOrder.getId()));
+        orderItemRepository.saveAll(orderItems);
+        paymentClient.processPayment(PaymentRequest.builder()
+                .customerId(customerId)
+                .totalAmount(totalAmount[0])
+                .build());
+        return CreateOrderResponse
+                .builder()
+                .items(request.getItems())
+                .build();
     }
 }

@@ -76,7 +76,7 @@ CREATE TABLE `campaign_items` (
 
 CREATE TABLE `orders` (
   `id` varchar(36) PRIMARY KEY,
-  `user_id` varchar(36),
+  `customer_id` varchar(36),
   `total_amount` decimal(19,2),
   `status` enum ('PENDING', 'PREPARED', 'SHIPPED', 'DELIVERED', 'CANCELED'),
   `created_at` timestamp(6) NOT NULL,
@@ -106,7 +106,7 @@ ALTER TABLE `campaign_items` ADD CONSTRAINT `fk_campaign_items_campaign_id` FORE
 
 ALTER TABLE `campaign_items` ADD CONSTRAINT `fk_campaign_items_thumbnail_id` FOREIGN KEY (`thumbnail_id`) REFERENCES `files` (`id`);
 
-ALTER TABLE `orders` ADD CONSTRAINT `fk_orders_user_id` FOREIGN KEY (`user_id`) REFERENCES `customers` (`user_id`);
+ALTER TABLE `orders` ADD CONSTRAINT `fk_orders_customer_id` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`user_id`);
 
 ALTER TABLE `order_items` ADD CONSTRAINT `fk_order_items_order_id` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
 

@@ -38,6 +38,8 @@ Cấu hình datasource bằng `SPRING_DATASOURCE_URL` (database `ecommerce`), `S
 
 Ứng dụng mặc định chạy tại cổng 8080. Swagger UI: `/swagger-ui/index.html`; health: `/actuator/health`.
 
+Server Express giả lập thanh toán chạy riêng tại cổng 3001. Xem cách chạy và kết nối Spring Boot tại [payment-mock/README.md](payment-mock/README.md).
+
 ## API hiện tại
 
 | Method | Endpoint | Chức năng |
