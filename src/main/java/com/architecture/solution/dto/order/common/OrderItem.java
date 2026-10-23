@@ -13,5 +13,5 @@ public class OrderItem {
     private String campaignItemId;
 
     @JsonProperty("quantity")
-    private Long quantity;
+    private Integer quantity;
 }

@@ -33,5 +33,5 @@ public class OrderItem extends BaseEntity {
     private String campaignItemId;
 
     @Column(nullable = false)
-    private Long quantity;
+    private Integer quantity;
 }

@@ -49,7 +49,7 @@ public class FlashSaleServiceImpl implements FlashSaleService {
             CampaignItem campaignItem = campaignItemRepository.findById(item.getCampaignItemId())
                     .orElseThrow(() -> new ResourceNotFoundException("Campaign item not found"));
             Long stock = campaignItem.getStock();
-            Long quantity = item.getQuantity();
+            Integer quantity = item.getQuantity();
             if (stock < quantity) {
                 throw new OutOfStockException("Not enough stock");
             }
