@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import java.time.Instant;
-import java.util.List;
 
 @Builder
 @Getter
@@ -30,6 +29,6 @@ public class LoginResponse {
     @JsonProperty("username")
     private String username;
 
-    @JsonProperty("roles")
-    private List<RoleName> roles;
+    @JsonProperty("role")
+    private RoleName role;
 }

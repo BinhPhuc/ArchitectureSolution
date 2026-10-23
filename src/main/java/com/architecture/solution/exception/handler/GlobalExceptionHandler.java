@@ -28,16 +28,9 @@ public class GlobalExceptionHandler {
                 HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
     }
 
-    @ExceptionHandler(ResourceConflictException.class)
-    public ResponseEntity<ErrorResponse> handleResourceConflictException(ResourceConflictException ex,
-                                                                        HttpServletRequest request) {
-        return ErrorResponseUtils.toResponseEntity(
-                HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
-    }
-
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ErrorResponse> handleAccessDeniedException(AccessDeniedException ex,
-                                                                    HttpServletRequest request) {
+                                                                     HttpServletRequest request) {
         return ErrorResponseUtils.toResponseEntity(
                 HttpStatus.FORBIDDEN, ex.getMessage(), request.getRequestURI());
     }
@@ -106,12 +99,6 @@ public class GlobalExceptionHandler {
                 HttpStatus.UNAUTHORIZED, ex.getMessage(), request.getRequestURI());
     }
 
-    @ExceptionHandler(BucketNotEmptyException.class)
-    public ResponseEntity<ErrorResponse> handleBucketNotEmptyException(BucketNotEmptyException ex, HttpServletRequest request) {
-        return ErrorResponseUtils.toResponseEntity(
-                HttpStatus.CONFLICT, ex.getMessage(), request.getRequestURI());
-    }
-
     @ExceptionHandler(IllegalFileException.class)
     public ResponseEntity<ErrorResponse> handleIllegalFileException(IllegalFileException ex, HttpServletRequest request) {
         return ErrorResponseUtils.toResponseEntity(
@@ -130,5 +117,16 @@ public class GlobalExceptionHandler {
         log.error("Invalid server state for {}", request.getRequestURI(), ex);
         return ErrorResponseUtils.toResponseEntity(
                 HttpStatus.INTERNAL_SERVER_ERROR, "An internal server error occurred", request.getRequestURI());
+    }
+
+    @ExceptionHandler(OutOfStockException.class)
+    public ResponseEntity<ErrorResponse> handleOutOfStockException(OutOfStockException ex, HttpServletRequest request) {
+        return ErrorResponseUtils.toResponseEntity(
+                HttpStatus.BAD_REQUEST, ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(WebClientException.class)
+    public ResponseEntity<ErrorResponse> handleWebClientException(WebClientException ex, HttpServletRequest request) {
+        return ErrorResponseUtils.toResponseEntity(HttpStatus.BAD_GATEWAY, ex.getMessage(), request.getRequestURI());
     }
 }

@@ -28,17 +28,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Set;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final UserRoleRepository userRoleRepository;
-    private final CandidateRepository candidateRepository;
-    private final RecruiterRepository recruiterRepository;
+    private final CustomerRepository customerRepository;
+    private final SellerRepository sellerRepository;
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtil;
@@ -47,13 +43,13 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void register(RegisterRequest registerRequest) {
-        Set<RoleName> roleNames = registerRequest.getRoles();
-        if (roleNames == null || roleNames.isEmpty()) {
-            throw new InvalidArgumentException("Roles are required");
+        if (!StringUtils.hasText(registerRequest.getRole())) {
+            throw new InvalidArgumentException("Role is required");
         }
+        RoleName role = RoleName.valueOf(registerRequest.getRole());
 
-        if (roleNames.contains(RoleName.RECRUITER) && !StringUtils.hasText(registerRequest.getCompanyName())) {
-            throw new InvalidArgumentException("Company name is required for recruiters");
+        if (role == RoleName.SELLER && !StringUtils.hasText(registerRequest.getShopName())) {
+            throw new InvalidArgumentException("Shop name is required for sellers");
         }
 
         String password = registerRequest.getPassword();
@@ -65,45 +61,28 @@ public class AuthServiceImpl implements AuthService {
             throw new ResourceExistsException("User with username " + registerRequest.getUsername() + " already exists");
         }
         if (userRepository.existsByEmail(registerRequest.getEmail())) {
-            throw new ResourceExistsException("User with email " + registerRequest.getEmail() +
-                    " already exists");
+            throw new ResourceExistsException("User with email " + registerRequest.getEmail() + " already exists");
         }
         String encodedPassword = passwordEncoder.encode(password);
-        userRepository.save(User.builder()
+        User user = userRepository.save(User.builder()
                 .username(registerRequest.getUsername())
                 .passwordHash(encodedPassword)
                 .email(registerRequest.getEmail())
-                .displayedName(registerRequest.getDisplayedName())
+                .displayedName(registerRequest.getUsername())
+                .role(role)
                 .build());
 
-        User user = userRepository.findByUsername(registerRequest.getUsername())
-                .orElseThrow(() -> new IllegalStateException("User not found after " +
-                        "registration"));
-
-        for (RoleName roleName : roleNames) {
-            if (roleName == RoleName.ADMIN) {
-                throw new AccessDeniedException("Cannot register as ADMIN");
-            }
-            Role role = roleRepository.findByName(roleName)
-                    .orElseThrow(() -> new IllegalStateException("Role not found"));
-            UserRole userRole = UserRole.builder()
+        if (role == RoleName.CUSTOMER) {
+            customerRepository.save(Customer.builder()
                     .userId(user.getId())
-                    .roleId(role.getId())
-                    .build();
-            userRoleRepository.save(userRole);
-
-            if (roleName == RoleName.CANDIDATE) {
-                Candidate candidate = Candidate.builder()
-                        .userId(user.getId())
-                        .phone(registerRequest.getPhone())
-                        .build();
-                candidateRepository.save(candidate);
-            } else if (roleName == RoleName.RECRUITER) {
-                recruiterRepository.save(Recruiter.builder()
-                        .companyName(registerRequest.getCompanyName())
-                        .userId(user.getId())
-                        .build());
-            }
+                    .phone(registerRequest.getPhone())
+                    .shippingAddress(registerRequest.getShippingAddress())
+                    .build());
+        } else {
+            sellerRepository.save(Seller.builder()
+                    .shopName(registerRequest.getShopName())
+                    .userId(user.getId())
+                    .build());
         }
     }
 
@@ -137,7 +116,7 @@ public class AuthServiceImpl implements AuthService {
                 .refreshToken(refreshToken)
                 .expiresAt(jwtUtil.extractExpiration(claims).toInstant())
                 .username(user.getUsername())
-                .roles(userRoleRepository.findRoleNamesByUserId(user.getId()))
+                .role(user.getRole())
                 .build();
     }
 
@@ -152,7 +131,7 @@ public class AuthServiceImpl implements AuthService {
         if (!TokenType.REFRESH.name().equals(jwtUtil.extractType(claims))) {
             throw new UnauthorizedException("Invalid token type");
         }
-        User user = userRepository.findByRefreshTokenAndIsDeletedFalse(refreshToken)
+        User user = userRepository.findByRefreshToken(refreshToken)
                 .orElseThrow(() -> new UnauthorizedException("Invalid refresh token"));
         if (!jwtUtil.validateToken(claims, user.getUsername())) {
             throw new UnauthorizedException("Invalid refresh token");

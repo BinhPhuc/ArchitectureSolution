@@ -25,9 +25,4 @@ public class CustomUserDetails implements UserDetails {
     public String getPassword() {
         return user.getPasswordHash();
     }
-
-    @Override
-    public boolean isEnabled() {
-        return !Boolean.TRUE.equals(user.getIsDeleted());
-    }
 }

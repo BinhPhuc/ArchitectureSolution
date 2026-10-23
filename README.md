@@ -1,186 +1,60 @@
-# HireMe — Job Board REST API
+# Ecommerce System — Flash Sale
 
-HireMe is a backend service for a job marketplace. **Recruiters** publish job postings, **candidates** browse them and apply with a PDF CV, and recruiters review the applications they receive.
+Monolithic Spring Boot backend cho hệ thống thương mại điện tử tập trung vào flash sale. Mô hình dữ liệu được chuyển từ EcommerceMicroservices và gộp vào một database MySQL `ecommerce`.
 
-## Table of Contents
+## Phạm vi hiện tại
 
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [API Overview](#api-overview)
-- [Data Model](#data-model)
-- [Deployment](#deployment)
-- [Project Structure](#project-structure)
+- Xác thực JWT: đăng ký, đăng nhập, refresh token; vai trò `ADMIN`, `CUSTOMER`, `SELLER`.
+- Customer và Seller dùng bảng hồ sơ riêng, liên kết với User qua `user_id`, theo convention cũ.
+- Entity và SQL cho sản phẩm, chiến dịch flash sale, đơn hàng và ảnh sản phẩm.
+- Không còn bảng sản phẩm riêng; seller tạo campaign kèm danh sách item, mỗi item tự chứa `name`, `thumbnail_id`, `price`, `stock`.
+- Seller upload thumbnail JPEG/PNG cho item; bucket `item-images` được khởi tạo khi ứng dụng chạy.
+- API nghiệp vụ flash sale sẽ triển khai ở bước tiếp theo. Các API tuyển dụng đã được xóa.
 
-## Features
+Chi tiết phạm vi, nguồn entity và tiến độ: [REFACTOR.md](REFACTOR.md).
 
-| Role          | Capabilities                                                                                      |
-|---------------|---------------------------------------------------------------------------------------------------|
-| **Anyone**    | Register, log in, refresh tokens; search jobs; view a job and the categories |
-| **Candidate** | Apply to open jobs by uploading a PDF CV                                                          |
-| **Recruiter** | Create jobs and change their status; list applications for own jobs                               |
-| **Admin**     | Seeded automatically on first start (see [Configuration](#configuration))                         |
+## Công nghệ
 
-Highlights:
+Java 17+, Spring Boot, Spring Data JPA, Spring Security, JWT, MySQL, Lombok và OpenAPI. Hạ tầng S3/RustFS hiện có được giữ lại.
 
-- Stateless JWT authentication (short-lived access token + rotating refresh token) with role-based authorization (`ADMIN`, `RECRUITER`, `CANDIDATE`).
-- CVs are validated as readable PDFs and stored in S3-compatible object storage; only metadata lives in the database.
-- Soft deletes and audit fields on every table.
-- Uniform response envelope and centralized error handling.
-- Interactive API documentation via Swagger UI.
+## Database
 
-## Tech Stack
+Chạy lần lượt trên database mới:
 
-- **Language / Framework:** Java 17, Spring Boot 4.1
-- **Database:** MySQL 8.4
-- **Object storage:** [RustFS](https://github.com/rustfs/rustfs) (S3-compatible)
-- **Auth:** JWT (jjwt 0.11.5), BCrypt password hashing
-- **PDF validation:** Apache PDFBox
-- **API docs:** springdoc-openapi
-- **Build / delivery:** Maven, Docker, Docker Compose, GitHub Actions
+1. `infrastructure/database/init/01-schema.sql`
+2. `infrastructure/database/init/02-fake-init.sql` nếu cần dữ liệu phát triển.
 
-## Architecture
+Script thứ hai tạo `admin` / `Admin@123`, `seller01` / `Demo@123`, `customer01` / `Demo@123` và một chiến dịch mẫu bắt đầu sau thời điểm seed một ngày. Chỉ dùng tài khoản mẫu cho phát triển.
 
-![Architecture diagram](docs/architecture.jpg)
+Docker Compose mount thư mục script vào `/docker-entrypoint-initdb.d`; MySQL chỉ tự chạy các script khi khởi tạo volume mới. Đây là schema khởi tạo mới, không phải migration cho database tuyển dụng cũ. Không cần xóa volume cũ để xem hoặc kiểm tra thay đổi.
 
-A classic layered design: controllers handle HTTP and OpenAPI annotations (kept in separate `docs/*Api` interfaces), services hold business rules, repositories use Spring Data JPA. On startup, `BucketInitializer` creates the CV bucket and `AdminInitializer` seeds a default admin if none exists.
+## Cấu hình và chạy
 
-## Getting Started
-
-### Prerequisites
-
-- JDK 17+
-- Docker and Docker Compose
-- Maven
-
-### 1. Start the infrastructure
-
-Create `deploy/env/.env.dev` from the template and fill in the values:
-
-```bash
-cp deploy/env/.env.example deploy/env/.env.dev
-```
-
-Then start MySQL and RustFS:
-
-```bash
-./deploy/script/infra.sh
-```
-
-This creates the `architecture_solution` Docker network and brings up:
-
-| Service | Ports                             | Notes                                                                            |
-|---------|-----------------------------------|----------------------------------------------------------------------------------|
-| MySQL   | `3306`                            | Schema and roles are created from `infrastructure/database/init/` on first start |
-| RustFS  | `9000` (S3 API), `9001` (console) | Credentials from `RUSTFS_ACCESS_KEY` / `RUSTFS_SECRET_KEY`                       |
-
-The init scripts also load **development fixtures** (`03-fake-init.sql`): `admin` / `Admin@123`, `recruiter01..03` and `candidate01..08` / `Demo@123`. Do not use this script in production.
-
-### 2. Configure the application
-
-Create `src/main/resources/application-dev.yaml` with the properties listed in [Configuration](#configuration).
-
-### 3. Run
+Cấu hình datasource bằng `SPRING_DATASOURCE_URL` (database `ecommerce`), `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`. Thiết lập các thuộc tính JWT, S3 và admin theo cấu hình môi trường hiện có trong `deploy/env` hoặc `application-dev.yaml`.
 
 ```bash
 ./mvnw spring-boot:run
 ```
 
-The API is served at `http://localhost:8080`.
+Ứng dụng mặc định chạy tại cổng 8080. Swagger UI: `/swagger-ui/index.html`; health: `/actuator/health`.
 
-- Swagger UI: `http://localhost:8080/swagger-ui.html`
-- Health check: `http://localhost:8080/actuator/health`
+Server Express giả lập thanh toán chạy riêng tại cổng 3001. Xem cách chạy và kết nối Spring Boot tại [payment-mock/README.md](payment-mock/README.md).
 
-### Build and test
+## API hiện tại
 
-```bash
-./mvnw clean verify      # compile and run tests
-./mvnw package -DskipTests
-```
+| Method | Endpoint | Chức năng |
+| --- | --- | --- |
+| POST | `/api/v1/auth/register` | Đăng ký customer/seller |
+| POST | `/api/v1/auth/login` | Đăng nhập |
+| POST | `/api/v1/auth/refresh` | Làm mới token |
+| POST | `/api/v1/files/item-images` | Seller upload thumbnail cho campaign item, multipart field `file` |
 
-## Configuration
+Đăng ký sử dụng `role` (một trong `SELLER`, `CUSTOMER`), `displayed_name`, `retype_password`; customer có `phone`, `shipping_address`; seller cần `shop_name`. Mỗi user chỉ có một vai trò, lưu trực tiếp ở cột `users.role`.
 
-Settings are resolved from `application.yaml` plus the active profile (`SPRING_PROFILES_ACTIVE`, default `dev`). Locally, put these settings in the git-ignored `application-dev.yaml`, which reads them from the environment variables in the **Env var** column.
+Upload cần Bearer token có vai trò `SELLER` và hồ sơ seller còn hoạt động. Giới hạn multipart hiện tại: 10 MB mỗi file. API trả về ID file và object key; metadata lưu trong bảng `files`, nội dung ảnh lưu trên S3/RustFS. ID file trả về được truyền vào `thumbnail_id` của từng item khi tạo campaign. Không seed metadata ảnh giả khi chưa có object thực tế.
 
-| Property                                                       | Env var                                                       | Description                                                                             |
-|----------------------------------------------------------------|---------------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| `spring.datasource.url` / `username` / `password`              | `SPRING_DATASOURCE_URL` / `_USERNAME` / `_PASSWORD`           | MySQL connection (database `hire_me`)                                                   |
-| `jwt.secretKey`                                                | `JWT_SECRET_KEY`                                              | **Base64-encoded** HMAC-SHA256 signing key (at least 256 bits)                          |
-| `s3.endpoint` / `access-key` / `secret-key` / `region`         | `RUSTFS_ENDPOINT` / `_ACCESS_KEY` / `_SECRET_KEY` / `_REGION` | S3-compatible storage connection                                                        |
-| `app.admin.email` / `username` / `password` / `displayed-name` | `ADMIN_EMAIL` / `_USERNAME` / `_PASSWORD` / `_DISPLAYED_NAME` | Default admin created at startup if no admin exists. Skipped when the password is empty |
+Bucket initializer dùng cấu hình S3 hiện có, tạo bucket khi chưa tồn tại. Cần S3/RustFS hoạt động khi khởi động ứng dụng.
 
-Fixed defaults: access token lifetime 5 minutes, refresh token lifetime 7 days, upload limits 10 MB per file / 15 MB per request, CV bucket `hireme-cv`.
+## Triển khai
 
-> **Security:** never commit real secrets. `application-dev.yaml` and `deploy/env/.env.dev` are git-ignored. Note that `spring.jpa.hibernate.ddl-auto` is `update` by default. Consider `validate` in production and manage the schema through the SQL scripts.
-
-## API Overview
-
-Base path: `/api/v1`. Full request/response schemas are available in Swagger UI.
-
-**Auth** — public
-
-| Method | Path             | Description                             |
-|--------|------------------|-----------------------------------------|
-| POST   | `/auth/register` | Register a user with one or more roles  |
-| POST   | `/auth/login`    | Obtain access and refresh tokens        |
-| POST   | `/auth/refresh`  | Exchange a refresh token for new tokens |
-
-**Jobs**
-
-| Method | Path                   | Access            | Description                                                        |
-|--------|------------------------|-------------------|--------------------------------------------------------------------|
-| GET    | `/jobs`                | Public            | Search by `title`, `jobType`, `status`; paginated (`page`, `size`) |
-| GET    | `/jobs/{jobId}`        | Public            | Get one job                                                        |
-| POST   | `/jobs`                | Recruiter         | Create a job (starts as `OPEN`)                                    |
-| POST   | `/jobs/{jobId}/status` | Recruiter         | Change status (`OPEN`, `FILLED`, `CLOSED`)                         |
-
-**Applications**
-
-| Method | Path | Access | Description |
-|--------|------|--------|-------------|
-| POST | `/jobs/{jobId}/application` | Candidate | Apply to an open job with a PDF CV (multipart); one application per job |
-| GET | `/jobs/{jobId}/applications` | Recruiter (owner) | List applications for a job |
-
-**Categories**
-
-| Method | Path | Access | Description |
-|--------|------|--------|-------------|
-| GET | `/categories` | Public | List job categories with job count |
-
-Authenticate protected requests with `Authorization: Bearer <access_token>`.
-
-## Data Model
-
-![Database schema](docs/database.png)
-
-The full DDL is in [`infrastructure/database/init/01-schema.sql`](infrastructure/database/init/01-schema.sql).
-
-## Deployment
-
-1. **CI:** `.github/workflows/docker-publish.yml` builds the image on every push to `main`, pushes it to `ghcr.io/binhphuc/architecturesolution`, and signs it with cosign. It can also be triggered manually.
-2. **Image:** a multi-stage `Dockerfile`, running as a non-root user.
-3. **Run:** `./deploy/script/deploy.sh` starts the infrastructure, waits for it to be healthy, then pulls and starts the application container (`deploy/compose/compose-app.yaml`). The script reads `deploy/env/.env.dev`; edit `is_dev` in the script to use `deploy/env/.env` instead.
-
-The whole env file is passed to the application container via `env_file`, so every variable listed in [`deploy/env/.env.example`](deploy/env/.env.example) (datasource, `JWT_SECRET_KEY`, `ADMIN_*`, `RUSTFS_*`) reaches the app. Note that `application-dev.yaml` is git-ignored and not part of the image, so a production profile that maps these variables to the properties in [Configuration](#configuration) is still to be added.
-4. **Secrets (planned):** store them in GitHub Secrets and have the workflow generate `deploy/env/.env` at deploy time. Automated deployment is not set up yet.
-
-## Project Structure
-
-```
-
-├── src/main/java/com/architecture/solution
-│   ├── config/          Security, S3, auditing, startup initializers
-│   ├── controller/      REST controllers (+ docs/ OpenAPI interfaces)
-│   ├── service/         Business logic (interfaces + impl/)
-│   ├── repository/      Spring Data JPA repositories and projections
-│   ├── entity/          JPA entities (soft delete + audit base class)
-│   ├── dto/             Request/response models, ApiResponse envelope
-│   ├── security/        Auth entry point, access-denied handler, user details
-│   ├── filter/          JWT authentication filter
-│   ├── exception/       Domain exceptions and GlobalExceptionHandler
-│   └── util/, validator/, annotation/, enums/, constant/
-├── infrastructure/database/init/   Schema, role seed, dev fixtures
-└── deploy/                         Compose files, env template, scripts
-```
+Giữ cấu trúc hiện có tại `deploy/compose` và `deploy/script`. Cấu hình biến môi trường theo từng môi trường trước khi chạy các script triển khai. Các sơ đồ ảnh cũ trong `docs` chưa được cập nhật cho mô hình Ecommerce.

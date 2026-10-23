@@ -1,0 +1,16 @@
+{
+  "name": "payment-mock",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simple Express payment simulator",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
