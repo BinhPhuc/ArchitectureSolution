@@ -6,7 +6,6 @@ import com.architecture.solution.dto.flashsale.response.GetCampaignItemResponse;
 import com.architecture.solution.dto.order.request.CreateOrderRequest;
 import com.architecture.solution.dto.order.response.CreateOrderResponse;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 public interface FlashSaleService {
@@ -14,5 +13,5 @@ public interface FlashSaleService {
 
     CreateOrderResponse createOrder(CreateOrderRequest request);
 
-    CreateCampaignResponse createCampaign(CreateCampaignRequest request) throws AccessDeniedException;
+    CreateCampaignResponse createCampaign(CreateCampaignRequest request);
 }

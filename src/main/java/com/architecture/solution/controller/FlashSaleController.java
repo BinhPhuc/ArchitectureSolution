@@ -28,8 +28,9 @@ public class FlashSaleController implements FlashSaleApi {
     @PostMapping("/campaign/create")
     @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<ApiResponse<CreateCampaignResponse>> createCampaign(
-            @Valid @RequestBody CreateCampaignRequest request) {
-        return ResponseEntity.ok(ApiResponse.success(flashSaleService.createCampaign(request), "Campaign created successfully"));
+            @Valid @RequestBody CreateCampaignRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.created(flashSaleService.createCampaign(request), "Campaign created successfully"));
     }
 
     @Override
@@ -46,7 +47,7 @@ public class FlashSaleController implements FlashSaleApi {
     public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(
             @Valid @RequestBody CreateOrderRequest createOrderRequest
     ) {
-        return ResponseEntity.ok(ApiResponse.success(flashSaleService.createOrder(createOrderRequest), "Order created successfully"));
+        return ResponseEntity.ok(ApiResponse.created(flashSaleService.createOrder(createOrderRequest), "Order created successfully"));
     }
 
 

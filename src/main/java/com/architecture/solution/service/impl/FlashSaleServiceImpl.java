@@ -16,13 +16,13 @@ import com.architecture.solution.exception.OutOfStockException;
 import com.architecture.solution.exception.ResourceNotFoundException;
 import com.architecture.solution.repository.*;
 import com.architecture.solution.service.FlashSaleService;
+import com.architecture.solution.service.SchedulerService;
 import com.architecture.solution.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +33,8 @@ public class FlashSaleServiceImpl implements FlashSaleService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final PaymentClient paymentClient;
-    private final SellerRepository sellerRepository;
     private final CampaignRepository campaignRepository;
+    private final SchedulerService schedulerService;
 
     @Override
     public List<GetCampaignItemResponse> getItemsByCampaignId(String campaignId) {
@@ -104,6 +104,7 @@ public class FlashSaleServiceImpl implements FlashSaleService {
                         .build()).toList();
 
         campaignItemRepository.saveAll(campaignItems);
+        schedulerService.scheduleOneTimeTask(request.getStartAt());
         return CreateCampaignResponse.builder()
                 .id(campaign.getId())
                 .name(campaign.getName())
