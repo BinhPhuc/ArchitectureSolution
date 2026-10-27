@@ -26,10 +26,10 @@ public class FlashSaleController implements FlashSaleApi {
 
     @Override
     @PostMapping("/campaign/create")
+    @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<ApiResponse<CreateCampaignResponse>> createCampaign(
-            @Valid @RequestBody CreateCampaignRequest request
-    ) {
-        return null;
+            @Valid @RequestBody CreateCampaignRequest request) {
+        return ResponseEntity.ok(ApiResponse.success(flashSaleService.createCampaign(request), "Campaign created successfully"));
     }
 
     @Override
@@ -48,4 +48,6 @@ public class FlashSaleController implements FlashSaleApi {
     ) {
         return ResponseEntity.ok(ApiResponse.success(flashSaleService.createOrder(createOrderRequest), "Order created successfully"));
     }
+
+
 }

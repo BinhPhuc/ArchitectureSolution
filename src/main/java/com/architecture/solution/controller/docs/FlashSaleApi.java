@@ -9,6 +9,7 @@ import com.architecture.solution.dto.order.response.CreateOrderResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @Tag(name = "Flash Sale Controller")
@@ -18,4 +19,5 @@ public interface FlashSaleApi {
     ResponseEntity<ApiResponse<List<GetCampaignItemResponse>>> getItemsByCampaignId(String campaignId);
 
     ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(CreateOrderRequest createOrderRequest);
+
 }

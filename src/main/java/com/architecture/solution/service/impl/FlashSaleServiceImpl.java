@@ -2,18 +2,19 @@ package com.architecture.solution.service.impl;
 
 import com.architecture.solution.client.payment.PaymentClient;
 import com.architecture.solution.client.payment.dto.request.PaymentRequest;
+import com.architecture.solution.dto.flashsale.request.CreateCampaignRequest;
+import com.architecture.solution.dto.flashsale.response.CreateCampaignResponse;
 import com.architecture.solution.dto.flashsale.response.GetCampaignItemResponse;
 import com.architecture.solution.dto.order.request.CreateOrderRequest;
 import com.architecture.solution.dto.order.response.CreateOrderResponse;
+import com.architecture.solution.entity.Campaign;
 import com.architecture.solution.entity.CampaignItem;
 import com.architecture.solution.entity.Order;
 import com.architecture.solution.entity.OrderItem;
 import com.architecture.solution.enums.OrderStatus;
 import com.architecture.solution.exception.OutOfStockException;
 import com.architecture.solution.exception.ResourceNotFoundException;
-import com.architecture.solution.repository.CampaignItemRepository;
-import com.architecture.solution.repository.OrderItemRepository;
-import com.architecture.solution.repository.OrderRepository;
+import com.architecture.solution.repository.*;
 import com.architecture.solution.service.FlashSaleService;
 import com.architecture.solution.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,6 +33,8 @@ public class FlashSaleServiceImpl implements FlashSaleService {
     private final OrderRepository orderRepository;
     private final OrderItemRepository orderItemRepository;
     private final PaymentClient paymentClient;
+    private final SellerRepository sellerRepository;
+    private final CampaignRepository campaignRepository;
 
     @Override
     public List<GetCampaignItemResponse> getItemsByCampaignId(String campaignId) {
@@ -77,5 +81,33 @@ public class FlashSaleServiceImpl implements FlashSaleService {
                 .builder()
                 .items(request.getItems())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public CreateCampaignResponse createCampaign(CreateCampaignRequest request) {
+        String userId = SecurityUtils.getUserId();
+        Campaign campaign = campaignRepository.save(Campaign.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .endAt(request.getEndAt())
+                .startAt(request.getStartAt())
+                .sellerId(userId).build());
+
+        List<CampaignItem> campaignItems = request.getItems().stream().map(
+                item -> CampaignItem.builder()
+                        .name(item.getName())
+                        .price(item.getPrice())
+                        .thumbnailId(item.getThumbnailId())
+                        .campaignId(campaign.getId())
+                        .stock(item.getStock())
+                        .build()).toList();
+
+        campaignItemRepository.saveAll(campaignItems);
+        return CreateCampaignResponse.builder()
+                .id(campaign.getId())
+                .name(campaign.getName())
+                .startedAt(campaign.getStartAt())
+                .endedAt(campaign.getEndAt()).build();
     }
 }
