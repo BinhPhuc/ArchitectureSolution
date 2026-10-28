@@ -1,6 +1,7 @@
 package com.architecture.solution.dto.flashsale.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -30,5 +31,6 @@ public class CreateCampaignRequest {
     private Instant endAt;
 
     @NotEmpty
+    @Valid
     private List<CreateCampaignItemRequest> items;
 }
