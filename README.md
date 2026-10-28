@@ -9,13 +9,10 @@ A small ecommerce backend built around **flash sale campaigns**: sellers create 
 - [Database](#database)
 - [Tech stack](#tech-stack)
 - [Getting started](#getting-started)
-- [Walkthrough: from zero to a paid order](#walkthrough-from-zero-to-a-paid-order)
 - [API reference](#api-reference)
-- [Configuration reference](#configuration-reference)
 - [Repository layout](#repository-layout)
 - [Build, test and deploy](#build-test-and-deploy)
-- [The eight intentional problems](#the-eight-intentional-problems)
-- [Contributing](#contributing)
+- [The nine intentional problems](#the-nine-intentional-problems)
 
 ## What it does
 
@@ -25,7 +22,7 @@ A small ecommerce backend built around **flash sale campaigns**: sellers create 
 | Images | Sellers upload JPEG/PNG thumbnails. Binary goes to an S3-compatible store (RustFS), metadata goes to MySQL. |
 | Campaigns | Sellers create a campaign (name, description, start/end time) with one or more items (name, price, stock, optional thumbnail). |
 | Campaign Items | Anyone can list the items of a campaign. |
-| Orders | Customers order items. The service checks stock, computes the total from stored prices, deducts stock, persists a `PENDING` order and calls the payment gateway, all in one database transaction. A payment failure rolls everything back. |
+| Orders | Customers order items. The service checks stock, computes the total from stored prices, deducts stock, persists a `PENDING` order and calls the payment gateway, all in one database transaction. A payment exception rolls back database changes; it cannot reverse a completed external payment. |
 | Notifications | When a campaign is created, an in-memory task is scheduled for its `start_at`. When it fires, a "Flash Sale is starting now!" email is *simulated* in the logs for every user. |
 | Operations | Swagger UI, OpenAPI JSON and an Actuator health endpoint. |
 ## Architecture
@@ -203,6 +200,8 @@ Request and response JSON use `snake_case`. Validation rules worth knowing:
 - Campaign: `name`, `start_at < end_at`, non-empty `items`; each item needs `name`, `price > 0`, `stock > 0`, and an optional `thumbnail_id` that belongs to the seller.
 - Order: non-empty `items`; each needs `campaign_item_id` and `quantity > 0`.
 
+Order creation is **not idempotent**: the endpoint does not read `Idempotency-Key` or store a deduplication record. Double-clicking checkout or retrying after a lost response can create another order, deduct stock again and request another payment. Sending that header alone provides no protection. See problem 9 in [The nine intentional problems](#the-nine-intentional-problems).
+
 ### Response envelopes
 
 Success:
@@ -318,7 +317,7 @@ Starts the infrastructure, waits for health checks, then runs `deploy/compose/co
 - add the application variables the container needs (`JWT_SECRETKEY`, datasource, S3) to the env file, since the container has no `application-dev.yaml`.
 
 GitHub Actions (`.github/workflows/docker-publish.yml`) builds the image on every push to `main`, pushes it to GHCR and signs it with cosign. Manual runs can opt in to pushing.
-## The eight intentional problems
+## The nine intentional problems
 
 | # | Problem | Where it lives today | What goes wrong |
 | --- | --- | --- | --- |
@@ -330,3 +329,4 @@ GitHub Actions (`.github/workflows/docker-publish.yml`) builds the image on ever
 | 6 | **Dual write** | 1. `createOrder` writes to MySQL and then calls the payment service in the same transaction<br>2. `FileServiceImpl.uploadItemImage` writes to RustFS then to MySQL | Two systems are written in one step with no way to undo both.<br>1. Money can be taken while the order is rolled back<br>2. A file can be stored while its database row fails<br> |
 | 7 | **Tight coupling** | `NotificationServiceImpl` is hard-wired to one channel: it injects `EmailService` and calls it directly | Adding another channel (for example `SmsService`) means editing `NotificationServiceImpl` instead of plugging a new sender in. Every new channel changes existing code. |
 | 8 | **No cache** | 1. `getItemsByCampaignId` and the per-item lookups in `createOrder` hit MySQL on every call<br>2. Nothing is cached (no Redis, no Spring Cache) | Every request reads the same campaign data from MySQL again. During a flash sale thousands of identical reads hit the database at once. |
+| 9 | **No idempotency** | `createOrder` has no idempotency key or duplicate-request check<br> | A double-click or retry can create duplicate orders, deduct stock again and charge the customer more than once. |
