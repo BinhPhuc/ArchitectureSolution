@@ -84,18 +84,12 @@ Eight tables, all with UUID string primary keys and the audit columns `created_a
 
 Run all commands from the repository root unless stated otherwise.
 
-### How configuration is loaded
-
-- **Spring Boot reads `application.yaml` and `application-<profile>.yaml` only.** It never reads a `.env` file.
-- Inside those YAML files, placeholders such as `${SPRING_DATASOURCE_URL:default}` are resolved from **OS environment variables** (or JVM system properties), falling back to the default after the colon.
-- **`deploy/env/*` is for Docker only.** Docker Compose uses it to pass environment variables into the MySQL and RustFS containers (and into the app container when it runs in Docker). When you run the backend with Maven, this file does nothing by itself; you can `source` it to export the same variables into your shell, or set them any other way.
-
 ### 1. Create the environment file
 
-`deploy/env/.env.dev` is git-ignored. Docker Compose reads it to configure the containers. Create it from the template:
+`deploy/env/.env` is git-ignored and holds the local configuration, including secrets. Create it from the template:
 
 ```bash
-cp deploy/env/.env.example deploy/env/.env.dev
+cp deploy/env/.env.example deploy/env/.env
 ```
 
 Then fill it in. A working local set of values:
@@ -106,41 +100,22 @@ RUSTFS_SECRET_KEY=rustfsadmin
 RUSTFS_REGION=us-east-1
 RUSTFS_ENDPOINT=http://localhost:9000
 
-SPRING_PROFILES_ACTIVE=dev
 SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/ecommerce
 MYSQL_ROOT_PASSWORD=rootpassword
 SPRING_DATASOURCE_USERNAME=root
 SPRING_DATASOURCE_PASSWORD=rootpassword
+
+JWT_SECRET_KEY='replace-with-a-generated-base64-key'
+PAYMENT_GATEWAY_URL=http://localhost:3001
 ```
 
-### 2. Create `application-dev.yaml`
-
-`src/main/resources/application-dev.yaml` is also git-ignored because it carries secrets. This is the file Spring Boot actually reads. Create it with this content; the `${VAR:default}` placeholders are resolved from OS environment variables and fall back to the defaults when a variable is not set:
-
-```yaml
-spring:
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/ecommerce}
-    username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:rootpassword}
-
-jwt:
-  secretKey: <paste the output of: openssl rand -base64 32>
-
-s3:
-  endpoint: ${RUSTFS_ENDPOINT:http://localhost:9000}
-  access-key: ${RUSTFS_ACCESS_KEY:rustfsadmin}
-  secret-key: ${RUSTFS_SECRET_KEY:rustfsadmin}
-  region: ${RUSTFS_REGION:us-east-1}
-```
-
-Generate the key:
+Generate a JWT key and paste it into `JWT_SECRET_KEY` in the env file:
 
 ```bash
 openssl rand -base64 32
 ```
 
-### 3. Start MySQL and RustFS
+### 2. Start MySQL and RustFS
 
 ```bash
 bash deploy/script/infra.sh
@@ -148,7 +123,7 @@ bash deploy/script/infra.sh
 
 The script creates the Docker network `architecture_solution` if needed and starts both containers from `deploy/compose/compose-infra.yaml`. On the **first** start MySQL runs `01-schema.sql` and `02-fake-init.sql`; an existing data volume keeps its data and does not rerun them.
 
-### 4. Start the payment mock
+### 3. Start the payment mock
 
 In a second terminal:
 
@@ -158,18 +133,20 @@ npm ci
 npm start          # listens on :3001, override with PORT=...
 ```
 
-### 5. Start the backend
+### 4. Start the backend
 
-Spring Boot reads `application.yaml` and `application-dev.yaml`, whose placeholders come from OS environment variables. If you want the same values that Docker uses, export `.env.dev` into your shell first; if you kept the defaults in `application-dev.yaml`, you can skip the export:
+Export the variables into the shell before starting Spring Boot:
 
 ```bash
-set -a; source deploy/env/.env.dev; set +a   # optional: export the same variables Docker uses
+set -a
+source deploy/env/.env
+set +a
 ./mvnw spring-boot:run
 ```
 
 MySQL and RustFS must be reachable at startup (schema validation and bucket creation happen immediately).
 
-### 6. Verify
+### 5. Verify
 
 | Service | URL |
 | --- | --- |
@@ -263,8 +240,7 @@ Error:
 │   ├── service/             # Service interfaces and impl/
 │   └── util/                # JwtUtils, FileUtils, SecurityUtils, ErrorResponseUtils
 ├── src/main/resources/
-│   ├── application.yaml         # tracked: server, JPA, multipart, payment defaults
-│   └── application-dev.yaml     # NOT tracked: datasource, jwt, s3 (you create it)
+│   └── application.yaml         # tracked: defaults and environment placeholders
 ├── src/test/                    # Spring context smoke test
 ├── infrastructure/database/init/
 │   ├── 01-schema.sql            # database, tables, foreign keys
@@ -272,7 +248,7 @@ Error:
 ├── payment-mock/                # Express payment simulator
 ├── deploy/
 │   ├── compose/                 # compose-infra.yaml (MySQL + RustFS), compose-app.yaml
-│   ├── env/                     # .env.example (tracked), .env.dev (not tracked)
+│   ├── env/                     # .env.example (tracked), .env (not tracked)
 │   └── script/                  # infra.sh, deploy.sh
 ├── docs/                        # architecture.drawio, database.dbml, exported images
 ├── Dockerfile
@@ -310,13 +286,13 @@ Multi-stage build (`maven:3.9.9-eclipse-temurin-17` → `eclipse-temurin:17-jre-
 bash deploy/script/deploy.sh
 ```
 
-Starts the infrastructure, waits for health checks, then runs `deploy/compose/compose-app.yaml`, which pulls `ghcr.io/binhphuc/architecturesolution:latest` (it does not build the local checkout). Both scripts use `deploy/env/.env.dev` while `is_dev=true`. When the backend runs in a container:
+Starts the infrastructure, waits for health checks, then runs `deploy/compose/compose-app.yaml`, which pulls `ghcr.io/binhphuc/architecturesolution:latest` (it does not build the local checkout). Both scripts use `deploy/env/.env`. When the backend runs in a container:
 
 - use `jdbc:mysql://mysql:3306/ecommerce` and `http://rustfs:9000` (containers share the `architecture_solution` network);
 - point `PAYMENT_GATEWAY_URL` at an address reachable from the container (`localhost:3001` would be the container itself; the mock is not part of the Compose files);
-- add the application variables the container needs (`JWT_SECRETKEY`, datasource, S3) to the env file, since the container has no `application-dev.yaml`.
+- fill in all required variables from `.env.example`, including `JWT_SECRET_KEY`; Compose passes them into the container and `application.yaml` resolves its placeholders.
 
-GitHub Actions (`.github/workflows/docker-publish.yml`) builds the image on every push to `main`, pushes it to GHCR and signs it with cosign. Manual runs can opt in to pushing.
+GitHub Actions (`.github/workflows/docker-publish.yml`) builds the image on every push to `main`, pushes it to GHCR and signs it with cosign. Manual runs can opt in to pushing. The workflow does not deploy the application and does not need application secrets; configuration is supplied when the container runs.
 ## The nine intentional problems
 
 | # | Problem | Where it lives today | What goes wrong |

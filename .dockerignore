@@ -29,6 +29,7 @@ logs/
 .env
 .env.*
 !deploy/env/.env.example
+src/main/resources/application-dev.yaml
 
 # OS and temporary files
 .DS_Store
