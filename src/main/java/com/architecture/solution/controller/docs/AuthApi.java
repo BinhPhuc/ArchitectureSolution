@@ -26,8 +26,12 @@ public interface AuthApi {
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400",
-            description = "Invalid request, passwords do not match, ADMIN role requested, " +
-                    "or username/email already exists",
+            description = "Invalid request, passwords do not match, or shop name missing for a seller",
+            content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+    )
+    @io.swagger.v3.oas.annotations.responses.ApiResponse(
+            responseCode = "409",
+            description = "Username or email already exists",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     )
     ResponseEntity<ApiResponse<String>> register(RegisterRequest registerRequest);
@@ -62,12 +66,12 @@ public interface AuthApi {
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400",
-            description = "Missing, invalid or non-refresh token",
+            description = "Missing refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     )
     @io.swagger.v3.oas.annotations.responses.ApiResponse(
-            responseCode = "404",
-            description = "Refresh token not found",
+            responseCode = "401",
+            description = "Invalid, expired, non-refresh or unknown refresh token",
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
     )
     ResponseEntity<ApiResponse<TokenResponse>> refreshToken(RefreshTokenRequest refreshTokenRequest);
