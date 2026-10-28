@@ -1,341 +1,332 @@
 # Architecture Solution — Flash Sale
 
-A Spring Boot backend for a flash sale ecommerce system. The application uses a monolithic architecture with one MySQL database, S3-compatible image storage through RustFS, and a separate Express service that simulates payment processing.
+A small ecommerce backend built around **flash sale campaigns**: sellers create time-boxed campaigns with items and stock, customers order those items, and an external (mocked) payment gateway is called inside the order transaction.
 
-## Current features
+## Table of contents
 
-- Register and authenticate users with `SELLER` or `CUSTOMER` roles.
-- Issue JWT access tokens and refresh tokens; store passwords with BCrypt.
-- Upload JPEG/PNG item thumbnails to the `item-images` bucket.
-- Create campaigns containing items with their own name, price, stock, and optional thumbnail.
-- Retrieve campaign items without authentication.
-- Create customer orders, calculate totals, update stock, and call the payment gateway within a database transaction.
-- Schedule a notification when a newly created campaign starts. Email delivery is currently simulated through application logs.
-- Expose Swagger/OpenAPI documentation and an Actuator health endpoint.
+- [What it does](#what-it-does)
+- [Architecture](#architecture)
+- [Database](#database)
+- [Tech stack](#tech-stack)
+- [Getting started](#getting-started)
+- [Walkthrough: from zero to a paid order](#walkthrough-from-zero-to-a-paid-order)
+- [API reference](#api-reference)
+- [Configuration reference](#configuration-reference)
+- [Repository layout](#repository-layout)
+- [Build, test and deploy](#build-test-and-deploy)
+- [The eight intentional problems](#the-eight-intentional-problems)
+- [Contributing](#contributing)
 
-There is no separate product catalog: product information lives directly in `campaign_items`. The current roles are `SELLER` and `CUSTOMER`; there is no admin registration or admin initialization flow.
+## What it does
 
+| Area | Capability |
+| --- | --- |
+| Accounts | Register as `SELLER` or `CUSTOMER`, log in, refresh tokens. JWT access tokens (5 min) + rotating refresh tokens (7 days). Passwords are BCrypt hashed. |
+| Images | Sellers upload JPEG/PNG thumbnails. Binary goes to an S3-compatible store (RustFS), metadata goes to MySQL. |
+| Campaigns | Sellers create a campaign (name, description, start/end time) with one or more items (name, price, stock, optional thumbnail). |
+| Campaign Items | Anyone can list the items of a campaign. |
+| Orders | Customers order items. The service checks stock, computes the total from stored prices, deducts stock, persists a `PENDING` order and calls the payment gateway, all in one database transaction. A payment failure rolls everything back. |
+| Notifications | When a campaign is created, an in-memory task is scheduled for its `start_at`. When it fires, a "Flash Sale is starting now!" email is *simulated* in the logs for every user. |
+| Operations | Swagger UI, OpenAPI JSON and an Actuator health endpoint. |
 ## Architecture
 
-```mermaid
-flowchart LR
-    Client[API client / Swagger UI] --> API[Spring Boot REST API]
-    API --> Services[Authentication, files, and flash sale services]
-    Services --> DB[(MySQL: ecommerce)]
-    Services --> Storage[(RustFS / S3: item-images)]
-    Services --> Payment[Express payment mock]
-    Services --> Scheduler[In-memory task scheduler]
-    Scheduler --> Notifications[Notification service]
-    Notifications --> Logs[Simulated email logs]
-```
+![Architecture diagram](docs/architecture.jpg)
 
-Controllers expose REST endpoints, services implement business logic, and Spring Data JPA repositories persist data. Spring Security applies JWT authentication and method-level role checks. `WebClient` handles payment requests; the application serves requests through Spring MVC.
+The runtime consists of one Spring Boot process and three backing services:
 
-## Technology
-
-| Component | Configuration in this repository |
+| Component | Role |
 | --- | --- |
-| Java | Source target 17; Docker build and runtime use Java 21 |
-| Spring Boot | 4.1.1 |
-| Persistence | Spring Data JPA / Hibernate, MySQL 8.4 |
-| Security | Spring Security, JJWT 0.11.5, BCrypt |
-| API documentation | springdoc-openapi 3.1.0 |
-| Object storage | AWS SDK for Java v2, RustFS |
-| Payment simulator | Node.js 18+, Express 5 |
-| Build and deployment | Maven Wrapper, Docker Compose, GitHub Actions / GHCR |
+| **Spring Boot monolith** (`:8080`) | REST API, security, business logic, scheduling. |
+| **MySQL 8.4** | Single database `ecommerce`. Schema is created by `infrastructure/database/init/01-schema.sql`; Hibernate only *validates* it (`ddl-auto: validate`). |
+| **RustFS** (`:9000`, console `:9001`) | S3-compatible object storage. Bucket `item-images` is created automatically at startup. |
+| **Payment mock** (`:3001`) | Standalone Express app in `payment-mock/`. Simulates a payment provider; keeps payments in memory. |
 
-## Repository layout
+Inside the monolith, requests flow through classic layers:
 
-```text
-src/main/java/com/architecture/solution/
-├── client/payment/       # Payment gateway integration
-├── config/               # Security, WebClient, auditing, scheduler
-├── controller/           # REST endpoints and OpenAPI interfaces
-├── dto/                  # Request and response models
-├── entity/               # JPA entities
-├── exception/            # Exceptions and centralized error handling
-├── infrastructure/s3/    # S3 configuration, bucket and object services
-├── repository/           # Spring Data JPA repositories
-├── security/             # User details and security error handlers
-├── service/              # Business services and implementations
-└── util/                 # JWT, file validation, and security helpers
-src/main/resources/application.yaml
-src/test/                 # Spring application context smoke test
-infrastructure/database/init/
-├── 01-schema.sql          # Database, tables, and foreign keys
-└── 02-fake-init.sql       # Development users and sample campaign
-payment-mock/             # Standalone Express payment simulator
-deploy/
-├── compose/              # Infrastructure and application Compose files
-├── env/                  # Environment template and local configuration
-└── script/               # Infrastructure and deployment scripts
+1. **Security** — `JwtAuthFilter` reads the `Authorization: Bearer …` header, validates the HS256 token, loads the user and sets `ROLE_SELLER` / `ROLE_CUSTOMER`. `SecurityConfig` whitelists the public routes; controllers use `@PreAuthorize` for role checks.
+2. **Controllers** (`controller/`) — thin REST endpoints. Their OpenAPI annotations live in `controller/docs/*Api` interfaces.
+3. **Services** (`service/`) — business rules: `AuthService`, `FileService`, `FlashSaleService`, `SchedulerService`, `NotificationService`, `EmailService`.
+4. **Adapters** — Spring Data JPA repositories (`repository/`), the S3 services (`infrastructure/s3/`) and the `PaymentClient` (`client/payment/`, a `WebClient` with a 5 s timeout).
+5. **Cross-cutting** — `GlobalExceptionHandler` turns exceptions into a uniform `ErrorResponse`; JPA auditing fills `created_by` / `last_modified_by` from the security context; Bean Validation guards the request DTOs.
+## Database
+
+![Database diagram](docs/database.png)
+
+Eight tables, all with UUID string primary keys and the audit columns `created_at`, `created_by`, `last_modified_at`, `last_modified_by` inherited from `BaseEntity`:
+
+| Table | Purpose | Key relations |
+| --- | --- | --- |
+| `users` | Credentials, single `role`, latest `refresh_token` | — |
+| `customers` | Customer profile (phone, shipping address) | PK = `users.id` |
+| `sellers` | Seller profile (shop name) | PK = `users.id` |
+| `files` | Image metadata and S3 `object_key` | `owner_id → sellers` |
+| `campaigns` | Flash sale event with `start_at` / `end_at` | `seller_id → sellers` |
+| `campaign_items` | Items for sale: name, price, stock, thumbnail | `campaign_id → campaigns`, `thumbnail_id → files` |
+| `orders` | Customer order with `total_amount` and `status` | `customer_id → customers` |
+| `order_items` | Items and quantities of an order | `order_id → orders`, `campaign_item_id → campaign_items` |
+## Tech stack
+
+| Concern | Choice |
+| --- | --- |
+| Framework | Spring Boot 4.1.1 (Web MVC, Security, Data JPA, Validation, Actuator, WebFlux client) |
+| Persistence | Hibernate + MySQL 8.4|
+| Auth | JJWT 0.11.5, BCrypt |
+| Object storage | AWS SDK for Java v2 (`s3`) against RustFS |
+| API docs | springdoc-openapi 3.1.0 |
+| Payment mock | Node.js ≥ 18, Express 5 |
+| Build / packaging | Maven Wrapper, Docker, Docker Compose v2 |
+| CI | GitHub Actions builds, pushes and signs the image to GHCR on `main` |
+## Getting started
+
+### Prerequisites
+
+- JDK 17
+- Docker with Compose v2
+- Node.js 18+ and npm (payment mock)
+- `openssl` (to generate a JWT key)
+
+Run all commands from the repository root unless stated otherwise.
+
+### How configuration is loaded
+
+- **Spring Boot reads `application.yaml` and `application-<profile>.yaml` only.** It never reads a `.env` file.
+- Inside those YAML files, placeholders such as `${SPRING_DATASOURCE_URL:default}` are resolved from **OS environment variables** (or JVM system properties), falling back to the default after the colon.
+- **`deploy/env/*` is for Docker only.** Docker Compose uses it to pass environment variables into the MySQL and RustFS containers (and into the app container when it runs in Docker). When you run the backend with Maven, this file does nothing by itself; you can `source` it to export the same variables into your shell, or set them any other way.
+
+### 1. Create the environment file
+
+`deploy/env/.env.dev` is git-ignored. Docker Compose reads it to configure the containers. Create it from the template:
+
+```bash
+cp deploy/env/.env.example deploy/env/.env.dev
 ```
 
-## Run locally
-
-Run commands from the repository root unless a step specifies otherwise. Requirements: JDK 17+ (Java 21 matches the Dockerfile), Docker with Compose v2, Node.js 18+ with npm, and OpenSSL for generating a JWT key. Maven is provided by `mvnw` (`mvnw.cmd` on Windows); the shell examples below use Bash.
-
-### 1. Configure the environment
-
-Create `deploy/env/.env.dev` with the following development values, or adapt an existing file. This path is ignored by Git. Replace the example credentials for your environment.
+Then fill it in. A working local set of values:
 
 ```dotenv
+RUSTFS_ACCESS_KEY=rustfsadmin
+RUSTFS_SECRET_KEY=rustfsadmin
+RUSTFS_REGION=us-east-1
+RUSTFS_ENDPOINT=http://localhost:9000
+
 SPRING_PROFILES_ACTIVE=dev
-MYSQL_ROOT_PASSWORD=local-mysql-password
 SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/ecommerce
+MYSQL_ROOT_PASSWORD=rootpassword
 SPRING_DATASOURCE_USERNAME=root
-SPRING_DATASOURCE_PASSWORD=local-mysql-password
-
-RUSTFS_ACCESS_KEY=local-rustfs-access
-RUSTFS_SECRET_KEY=local-rustfs-secret-password
-
-S3_ACCESSKEY=local-rustfs-access
-S3_SECRETKEY=local-rustfs-secret-password
-S3_REGION=us-east-1
-S3_ENDPOINT=http://localhost:9000
-
-JWT_SECRETKEY=replace-with-generated-base64-key
-PAYMENT_GATEWAY_URL=http://localhost:3001
-PAYMENT_TIMEOUT=5s
+SPRING_DATASOURCE_PASSWORD=rootpassword
 ```
 
-Generate a Base64-encoded key and paste it into `JWT_SECRETKEY`:
+### 2. Create `application-dev.yaml`
+
+`src/main/resources/application-dev.yaml` is also git-ignored because it carries secrets. This is the file Spring Boot actually reads. Create it with this content; the `${VAR:default}` placeholders are resolved from OS environment variables and fall back to the defaults when a variable is not set:
+
+```yaml
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/ecommerce}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:rootpassword}
+
+jwt:
+  secretKey: <paste the output of: openssl rand -base64 32>
+
+s3:
+  endpoint: ${RUSTFS_ENDPOINT:http://localhost:9000}
+  access-key: ${RUSTFS_ACCESS_KEY:rustfsadmin}
+  secret-key: ${RUSTFS_SECRET_KEY:rustfsadmin}
+  region: ${RUSTFS_REGION:us-east-1}
+```
+
+Generate the key:
 
 ```bash
 openssl rand -base64 32
 ```
 
-Configuration details:
-
-- `RUSTFS_ACCESS_KEY` and `RUSTFS_SECRET_KEY` configure the RustFS container. The corresponding `S3_ACCESSKEY` and `S3_SECRETKEY` values configure the application and must match.
-- The application reads `jwt.secretKey`; its direct environment variable is `JWT_SECRETKEY`. S3 properties are bound under `s3`, using the variables shown above.
-- The checked-in [environment template](deploy/env/.env.example) contains older names such as `JWT_SECRET_KEY` and `RUSTFS_ENDPOINT`. Those require an explicit property mapping to configure JWT/S3. The example above works directly with the checked-in application configuration. The template's `ADMIN_*` entries are currently unused.
-- The default profile is `dev`. An `application-dev.yaml` file is optional and is not tracked; the environment variables above are sufficient.
-- Hibernate uses `ddl-auto: validate`, so the database schema must exist before application startup.
-
-### 2. Start MySQL and RustFS
+### 3. Start MySQL and RustFS
 
 ```bash
 bash deploy/script/infra.sh
 ```
 
-The script reads `deploy/env/.env.dev`, creates the external Docker network `architecture_solution` if necessary, and starts the infrastructure containers. Wait for both services to become healthy:
+The script creates the Docker network `architecture_solution` if needed and starts both containers from `deploy/compose/compose-infra.yaml`. On the **first** start MySQL runs `01-schema.sql` and `02-fake-init.sql`; an existing data volume keeps its data and does not rerun them.
 
-```bash
-docker compose -p architecture-solution-infra \
-  --env-file deploy/env/.env.dev \
-  -f deploy/compose/compose-infra.yaml ps
-```
+### 4. Start the payment mock
 
-MySQL runs the SQL files in `infrastructure/database/init` automatically when its data volume is first initialized. Existing volumes retain their data and do not rerun these scripts. For a separately managed, empty database, run `01-schema.sql` first and optionally `02-fake-init.sql`. These scripts initialize a database; they are not migrations for an existing schema.
-
-### 3. Start the payment mock
-
-In a separate terminal:
+In a second terminal:
 
 ```bash
 cd payment-mock
 npm ci
-npm start
+npm start          # listens on :3001, override with PORT=...
 ```
 
-The default port is `3001`; set `PORT` to override it. Payment records are held in memory and disappear on restart.
+### 5. Start the backend
 
-### 4. Start the backend
-
-Export the environment file before launching Maven; Spring Boot does not automatically load this `.env` file:
+Spring Boot reads `application.yaml` and `application-dev.yaml`, whose placeholders come from OS environment variables. If you want the same values that Docker uses, export `.env.dev` into your shell first; if you kept the defaults in `application-dev.yaml`, you can skip the export:
 
 ```bash
-set -a
-source deploy/env/.env.dev
-set +a
+set -a; source deploy/env/.env.dev; set +a   # optional: export the same variables Docker uses
 ./mvnw spring-boot:run
 ```
 
-MySQL and RustFS must be reachable at startup. The application initializes the `item-images` bucket if it does not exist.
+MySQL and RustFS must be reachable at startup (schema validation and bucket creation happen immediately).
 
-| Service | Local address |
+### 6. Verify
+
+| Service | URL |
 | --- | --- |
-| Backend | http://localhost:8080 |
+| Backend health | http://localhost:8080/actuator/health |
 | Swagger UI | http://localhost:8080/swagger-ui/index.html |
 | OpenAPI JSON | http://localhost:8080/v3/api-docs |
-| Backend health | http://localhost:8080/actuator/health |
-| MySQL | `localhost:3306`, database `ecommerce` |
-| RustFS S3 endpoint | http://localhost:9000 |
-| RustFS console | http://localhost:9001 |
 | Payment mock health | http://localhost:3001/health |
+| RustFS console | http://localhost:9001 |
+| MySQL | `localhost:3306`, database `ecommerce` |
 
-## Database and development data
+## API reference
 
-The schema contains eight tables:
-
-| Table | Purpose |
-| --- | --- |
-| `users` | Credentials, role, display name, and stored refresh token |
-| `customers` | Customer profile, phone, and shipping address; primary key is `users.id` |
-| `sellers` | Seller profile and shop name; primary key is `users.id` |
-| `files` | Image metadata, object key, and seller ownership |
-| `campaigns` | Seller campaign with start and end timestamps |
-| `campaign_items` | Campaign items, prices, stock, and thumbnail references |
-| `orders` | Customer orders, totals, and status |
-| `order_items` | Ordered campaign items and quantities |
-
-The development seed creates `seller01` and `customer01`, plus a `Daily Flash Sale` campaign starting one day after seeding and lasting two hours. Its sample item is `Wireless Headphones`, priced at `700000`, with stock `20` and no thumbnail. Register a new account through the API if you need credentials you control.
-
-Sample campaign ID: `00000000-0000-0000-0000-000000000030`. Sample item ID: `00000000-0000-0000-0000-000000000031`.
-
-## REST API
-
-Protected endpoints expect `Authorization: Bearer <access_token>`.
-
-| Method | Endpoint | Access | Purpose |
+| Method | Endpoint | Access | Description |
 | --- | --- | --- | --- |
-| POST | `/api/v1/auth/register` | Public | Register a seller or customer |
-| POST | `/api/v1/auth/login` | Public | Obtain access and refresh tokens |
-| POST | `/api/v1/auth/refresh` | Public, valid refresh token required | Refresh tokens |
-| POST | `/api/v1/files/item-images` | `SELLER` | Upload a thumbnail, multipart field `file` |
-| POST | `/api/v1/flash-sales/campaign/create` | `SELLER` | Create a campaign and its items |
-| GET | `/api/v1/flash-sales/campaign/{campaignId}/items` | Public | List campaign items |
-| POST | `/api/v1/flash-sales/campaign/order` | `CUSTOMER` | Create an order and request payment |
+| POST | `/api/v1/auth/register` | Public | Register a `SELLER` (needs `shop_name`) or `CUSTOMER` (optional `phone`, `shipping_address`) |
+| POST | `/api/v1/auth/login` | Public | Returns access + refresh token |
+| POST | `/api/v1/auth/refresh` | Public (valid refresh token) | Rotates tokens |
+| POST | `/api/v1/files/item-images` | `SELLER` | Multipart field `file`; JPEG/PNG only |
+| POST | `/api/v1/flash-sales/campaign/create` | `SELLER` | Create a campaign with items |
+| GET | `/api/v1/flash-sales/campaign/{campaignId}/items` | Public | List items of a campaign |
+| POST | `/api/v1/flash-sales/campaign/order` | `CUSTOMER` | Create an order and charge it; campaign must be active |
+| GET | `/actuator/health` | Public | Liveness |
+| GET | `/swagger-ui/index.html`, `/v3/api-docs` | Public | API documentation |
 
-### Authentication
+Request and response JSON use `snake_case`. Validation rules worth knowing:
 
-Example seller registration body:
+- Register: all of `email` (valid address), `username` (≤ 50 chars), `password`, `retype_password`, `role` are required; `phone` must be 9–15 digits.
+- Campaign: `name`, `start_at < end_at`, non-empty `items`; each item needs `name`, `price > 0`, `stock > 0`, and an optional `thumbnail_id` that belongs to the seller.
+- Order: non-empty `items`; each needs `campaign_item_id` and `quantity > 0`.
 
-```json
-{
-  "email": "seller@example.com",
-  "username": "my-seller",
-  "password": "Demo@123",
-  "retype_password": "Demo@123",
-  "role": "SELLER",
-  "shop_name": "My Shop"
-}
-```
+### Response envelopes
 
-For a customer, use `"role": "CUSTOMER"` and optionally provide `phone` (9–15 digits) and `shipping_address`. Seller registration requires `shop_name`. Display names are currently initialized from the username; `displayed_name` is not a registration request field.
-
-Log in with `{"username":"my-seller","password":"Demo@123"}`. Tokens are returned in `data.access_token` and `data.refresh_token`. Access tokens last five minutes; refresh tokens initially last seven days. Refresh requests use `{"refresh_token":"<refresh_token>"}`. Refreshing preserves the original refresh-token expiry, and each user has one stored refresh token.
-
-### Upload a thumbnail
-
-```bash
-curl -X POST http://localhost:8080/api/v1/files/item-images \
-  -H "Authorization: Bearer <seller_access_token>" \
-  -F "file=@/path/to/item.png"
-```
-
-The response contains `data.id` and `data.object_key`. Use `data.id` as an item's `thumbnail_id`. Only readable JPEG/PNG images matching their declared content type are accepted. Limits are 10 MB per file and 15 MB per multipart request. Metadata is stored in MySQL; image content is stored in RustFS.
-
-### Create a campaign
-
-Send the following body to `POST /api/v1/flash-sales/campaign/create` with a seller token. Replace the timestamps with your desired schedule; timestamps use ISO 8601 UTC.
+Success:
 
 ```json
 {
-  "name": "Evening Flash Sale",
-  "description": "Limited stock offers",
-  "start_at": "2026-11-01T12:00:00Z",
-  "end_at": "2026-11-01T14:00:00Z",
-  "items": [
-    {
-      "name": "Wireless Headphones",
-      "thumbnail_id": null,
-      "price": 700000,
-      "stock": 20
-    }
-  ]
+  "status_code": <http status code>,
+  "message": "<human readable message>",
+  "data": <payload: object, array or null>
 }
 ```
 
-The response includes the campaign `id`, `name`, `started_at`, and `ended_at`. Fetch its items using the public GET endpoint to obtain item IDs.
-
-### Create an order
-
-Send this body to `POST /api/v1/flash-sales/campaign/order` with a customer token:
+Error:
 
 ```json
 {
-  "items": [
-    {
-      "campaign_item_id": "00000000-0000-0000-0000-000000000031",
-      "quantity": 1
-    }
-  ]
+  "status_code": <http status code>,
+  "error": "<http reason phrase>",
+  "message": "<what went wrong>",
+  "path": "<request path>",
+  "timestamp": "<ISO 8601 instant>"
 }
 ```
 
-The service checks item existence and available stock, calculates the total using stored prices, deducts stock, saves a `PENDING` order and its items, then calls the payment service. A payment exception rolls back the database transaction. The success response currently contains only the requested `items`.
+| HTTP | When |
+| --- | --- |
+| 400 | Validation error, passwords do not match, out of stock, invalid image, `end_at` before `start_at`, campaign not active |
+| 401 | Missing/invalid/expired token, wrong credentials, invalid refresh token |
+| 403 | Authenticated but wrong role, or seller profile missing |
+| 404 | Campaign, campaign item or thumbnail not found |
+| 409 | Username/email already exists, or a database constraint failed |
+| 500 | Storage failure or unexpected server state |
+| 502 | Payment gateway error, timeout or unreachable |
 
-**The current payment client always sends `Fault: true`.** With the bundled mock, order creation therefore returns HTTP `502` and rolls back the order and stock changes. The backend maps the mock's HTTP `422` error to `502`. To exercise successful backend orders, change that header behavior in [PaymentClientImpl.java](src/main/java/com/architecture/solution/client/payment/impl/PaymentClientImpl.java).
+### Payment mock
 
-### Response format
-
-Successful API responses wrap their payload in `status_code`, `message`, and `data`. Errors contain `status_code`, `error`, `message`, `path`, and `timestamp`.
-
-Registration and file upload return HTTP `201`. Campaign and order creation currently return HTTP `200` with `status_code: 201` in the JSON body.
-
-## Payment mock API
-
-| Method | Endpoint | Behavior |
+| Method | Endpoint | Description |
 | --- | --- | --- |
-| GET | `/health` | Returns `{"status":"UP"}` |
-| POST | `/payments` | Validates a customer ID and positive total, then simulates payment |
+| GET | `/health` | Health check |
+| POST | `/payments` | Simulate a payment for a customer (`customer_id`, `total_amount`); header `Fault: true` forces a failure |
 
-Test a successful payment directly:
+## Repository layout
 
-```bash
-curl -X POST http://localhost:3001/payments \
-  -H 'Content-Type: application/json' \
-  -H 'Fault: false' \
-  -d '{"customer_id":"demo-customer","total_amount":700000}'
+```text
+.
+├── src/main/java/com/architecture/solution/
+│   ├── annotation/          # @ValueOfEnum validator
+│   ├── client/payment/      # PaymentClient (WebClient) + DTOs
+│   ├── config/              # Security, WebClient, auditing, scheduler beans
+│   ├── controller/          # REST controllers; docs/ holds OpenAPI interfaces
+│   ├── dto/                 # Request / response models (snake_case JSON)
+│   ├── entity/              # JPA entities (BaseEntity holds audit columns)
+│   ├── enums/               # RoleName, OrderStatus, TokenType, ...
+│   ├── exception/           # Custom exceptions + GlobalExceptionHandler
+│   ├── filter/              # JwtAuthFilter
+│   ├── infrastructure/s3/   # S3 client config, bucket/object services, initializer
+│   ├── repository/          # Spring Data JPA repositories
+│   ├── security/            # UserDetails, 401/403 handlers
+│   ├── service/             # Service interfaces and impl/
+│   └── util/                # JwtUtils, FileUtils, SecurityUtils, ErrorResponseUtils
+├── src/main/resources/
+│   ├── application.yaml         # tracked: server, JPA, multipart, payment defaults
+│   └── application-dev.yaml     # NOT tracked: datasource, jwt, s3 (you create it)
+├── src/test/                    # Spring context smoke test
+├── infrastructure/database/init/
+│   ├── 01-schema.sql            # database, tables, foreign keys
+│   └── 02-fake-init.sql         # demo users and campaign
+├── payment-mock/                # Express payment simulator
+├── deploy/
+│   ├── compose/                 # compose-infra.yaml (MySQL + RustFS), compose-app.yaml
+│   ├── env/                     # .env.example (tracked), .env.dev (not tracked)
+│   └── script/                  # infra.sh, deploy.sh
+├── docs/                        # architecture.drawio, database.dbml, exported images
+├── Dockerfile
+└── .github/workflows/docker-publish.yml
 ```
 
-Success returns `data.transaction_id` and `data.status: "SUCCESS"`. `Fault: true` returns HTTP `422`; omitting the header defaults to success. This is a simulator with no real payment integration.
+## Build, test and deploy
 
-## Build and deployment
+### Tests
+
+```bash
+./mvnw test
+```
+
+The suite is a single Spring context smoke test, so it needs the same configuration and running MySQL/RustFS as the application. The payment mock has an `npm test` script but no tests yet.
+
+### Jar
 
 ```bash
 ./mvnw clean package -DskipTests
-java -jar target/solution-0.0.1-SNAPSHOT.jar
+java -jar target/solution-0.0.1-SNAPSHOT.jar      # same exported env as spring-boot:run
 ```
 
-The JAR requires the same exported configuration and running infrastructure as the Maven launch. To build a local Docker image:
+### Docker image
 
 ```bash
 docker build -t architecture-solution:local .
 ```
 
-The Dockerfile builds with Maven and Java 21, skips tests, and runs the JAR as a non-root user with `-Xms256m -Xmx512m`.
+Multi-stage build (`maven:3.9.9-eclipse-temurin-17` → `eclipse-temurin:17-jre-alpine`), runs as a non-root user with `-Xms256m -Xmx512m`.
 
-The existing deployment script starts infrastructure, waits for health checks, and pulls the application image `ghcr.io/binhphuc/architecturesolution:latest`:
+### Docker Compose deployment
 
 ```bash
 bash deploy/script/deploy.sh
 ```
 
-Both deployment scripts currently select `.env.dev` through `is_dev=true`. Before deploying the backend in Docker, adapt that environment file:
+Starts the infrastructure, waits for health checks, then runs `deploy/compose/compose-app.yaml`, which pulls `ghcr.io/binhphuc/architecturesolution:latest` (it does not build the local checkout). Both scripts use `deploy/env/.env.dev` while `is_dev=true`. When the backend runs in a container:
 
-- Use `mysql:3306` in `SPRING_DATASOURCE_URL` and `http://rustfs:9000` for `S3_ENDPOINT`, since the containers share the `architecture_solution` network.
-- Set `PAYMENT_GATEWAY_URL` to an address reachable from the backend container. `localhost:3001` points inside that container. The payment mock is not included in either Compose file.
-- Include the application variables from the local setup, particularly `JWT_SECRETKEY` and `S3_*`; the application Compose service loads the file using `env_file`.
+- use `jdbc:mysql://mysql:3306/ecommerce` and `http://rustfs:9000` (containers share the `architecture_solution` network);
+- point `PAYMENT_GATEWAY_URL` at an address reachable from the container (`localhost:3001` would be the container itself; the mock is not part of the Compose files);
+- add the application variables the container needs (`JWT_SECRETKEY`, datasource, S3) to the env file, since the container has no `application-dev.yaml`.
 
-The application Compose file pulls the published image; it does not build the local checkout. GitHub Actions builds the Docker image and publishes/signs it on pushes to `main`. Manual runs can optionally publish it.
+GitHub Actions (`.github/workflows/docker-publish.yml`) builds the image on every push to `main`, pushes it to GHCR and signs it with cosign. Manual runs can opt in to pushing.
+## The eight intentional problems
 
-## Verification and current limitations
-
-```bash
-./mvnw test
-curl http://localhost:8080/actuator/health
-curl http://localhost:3001/health
-```
-
-The Java test suite currently contains only a Spring context smoke test. It requires valid configuration, MySQL, and S3 storage because it starts the application context. The payment mock provides an `npm test` command, but no test files are currently included.
-
-Current implementation limits:
-
-- Campaign start/end times are stored, but ordering does not enforce the campaign window. Campaign creation does not validate timestamp ordering.
-- Order payloads lack validation for empty item lists and positive quantities. Stock updates use a read/check/write sequence without explicit locking or optimistic versioning, so concurrent orders are not protected against lost updates or overselling.
-- Notification schedules exist only in memory, are created by the campaign creation API, and are not restored from the database after restart. Seeded campaigns are not automatically scheduled. Notifications currently log messages for all users using their usernames as recipients.
-- Order statuses are defined in the schema, but only `PENDING` is assigned by the current API. There are no order history, status transition, cancellation, or refund endpoints.
-- Existing images in `docs/` describe an earlier model and are not the reference architecture for the current ecommerce implementation.
+| # | Problem | Where it lives today | What goes wrong |
+| --- | --- | --- | --- |
+| 1 | **Race condition / overselling** | `FlashSaleServiceImpl.createOrder`: `findById` → `stock < quantity` → `setStock(stock - quantity)` inside a plain `@Transactional`| Two customers buy the last item at the same time: both see stock = 1, both pass the check, both succeed. The shop sells more than it has. |
+| 2 | **Third-party API bottleneck** | `PaymentClientImpl.processPayment` is a blocking `WebClient … .block()` call with a 5 s timeout, executed on the request thread | Every order waits for the payment provider. If it is slow or down, every order is slow or fails, and the whole app can stop serving requests. |
+| 3 | **Notification burst** | `SchedulerServiceImpl`: when a campaign starts it loads **all** users and sends a notification to each one in a loop, in one thread | When a campaign starts, the app tries to notify every user at the same moment. With many users this overloads the app and the email/push provider. |
+| 4 | **Scheduled task conflicts under horizontal scaling** | `SchedulerConfig` uses `SimpleAsyncTaskScheduler`, which keeps its tasks in the JVM memory, so every instance has its own separate scheduler | The scheduled task lives in the memory of one instance.<br>1. Restart that instance and the task is gone<br>2. Run several instances and the task may run several times |
+| 5 | **Slow synchronous processing** | `createOrder` runs every step (stock check, DB writes, payment call) inside the HTTP request and only responds when all of them are done | The customer waits for the slowest step. Even with a fast payment provider, the response time grows with every step added, and nothing can be deferred to run later. |
+| 6 | **Dual write** | 1. `createOrder` writes to MySQL and then calls the payment service in the same transaction<br>2. `FileServiceImpl.uploadItemImage` writes to RustFS then to MySQL | Two systems are written in one step with no way to undo both.<br>1. Money can be taken while the order is rolled back<br>2. A file can be stored while its database row fails<br> |
+| 7 | **Tight coupling** | `NotificationServiceImpl` is hard-wired to one channel: it injects `EmailService` and calls it directly | Adding another channel (for example `SmsService`) means editing `NotificationServiceImpl` instead of plugging a new sender in. Every new channel changes existing code. |
+| 8 | **No cache** | 1. `getItemsByCampaignId` and the per-item lookups in `createOrder` hit MySQL on every call<br>2. Nothing is cached (no Redis, no Spring Cache) | Every request reads the same campaign data from MySQL again. During a flash sale thousands of identical reads hit the database at once. |
