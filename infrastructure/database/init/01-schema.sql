@@ -10,9 +10,9 @@ CREATE TABLE `users` (
   `displayed_name` varchar(255),
   `role` enum ('SELLER', 'CUSTOMER') NOT NULL,
   `refresh_token` varchar(255) UNIQUE,
-  `created_at` timestamp(6) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
+  `last_modified_at` datetime(6) NULL,
   `last_modified_by` varchar(255)
 );
 
@@ -20,18 +20,18 @@ CREATE TABLE `customers` (
   `user_id` varchar(36) PRIMARY KEY,
   `phone` varchar(255),
   `shipping_address` varchar(255),
-  `created_at` timestamp(6) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
+  `last_modified_at` datetime(6) NULL,
   `last_modified_by` varchar(255)
 );
 
 CREATE TABLE `sellers` (
   `user_id` varchar(36) PRIMARY KEY,
   `shop_name` varchar(255) NOT NULL,
-  `created_at` timestamp(6) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
+  `last_modified_at` datetime(6) NULL,
   `last_modified_by` varchar(255)
 );
 
@@ -42,9 +42,9 @@ CREATE TABLE `files` (
   `content_type` varchar(255) NOT NULL,
   `size_bytes` bigint NOT NULL,
   `owner_id` varchar(36) NOT NULL,
-  `created_at` timestamp(6) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
+  `last_modified_at` datetime(6) NULL,
   `last_modified_by` varchar(255)
 );
 
@@ -52,12 +52,12 @@ CREATE TABLE `campaigns` (
   `id` varchar(36) PRIMARY KEY,
   `name` varchar(255),
   `description` text,
-  `start_at` timestamp(6) NOT NULL,
-  `end_at` timestamp(6) NOT NULL,
+  `start_at` datetime(6) NOT NULL,
+  `end_at` datetime(6) NOT NULL,
   `seller_id` varchar(36),
-  `created_at` timestamp(6) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
+  `last_modified_at` datetime(6) NULL,
   `last_modified_by` varchar(255)
 );
 
@@ -68,9 +68,9 @@ CREATE TABLE `campaign_items` (
   `thumbnail_id` varchar(36),
   `price` decimal(19,2),
   `stock` bigint NOT NULL,
-  `created_at` timestamp(6) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
+  `last_modified_at` datetime(6) NULL,
   `last_modified_by` varchar(255)
 );
 
@@ -79,9 +79,9 @@ CREATE TABLE `orders` (
   `customer_id` varchar(36),
   `total_amount` decimal(19,2),
   `status` enum ('PENDING', 'PREPARED', 'SHIPPED', 'DELIVERED', 'CANCELED'),
-  `created_at` timestamp(6) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
+  `last_modified_at` datetime(6) NULL,
   `last_modified_by` varchar(255)
 );
 
@@ -90,9 +90,9 @@ CREATE TABLE `order_items` (
   `order_id` varchar(36),
   `campaign_item_id` varchar(36),
   `quantity` int NOT NULL,
-  `created_at` timestamp(6) NOT NULL,
+  `created_at` datetime(6) NOT NULL,
   `created_by` varchar(255) NOT NULL,
-  `last_modified_at` timestamp(6) NULL,
+  `last_modified_at` datetime(6) NULL,
   `last_modified_by` varchar(255)
 );
 
