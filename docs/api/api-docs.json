@@ -1,0 +1,544 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "OpenAPI definition", "version": "v0" },
+  "servers": [
+    { "url": "http://localhost:8080", "description": "Generated server url" }
+  ],
+  "paths": {
+    "/api/v1/flash-sales/campaign/order": {
+      "post": {
+        "tags": ["Flash Sale Controller"],
+        "summary": "Create an order",
+        "description": "Order campaign items as a customer. Stock is deducted, the order is saved with status PENDING and the payment gateway is called in the same transaction.",
+        "operationId": "createOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateOrderRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Order created and payment accepted",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCreateOrderResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, campaign not active, or not enough stock",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated user is not a customer",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Campaign item or campaign not found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "502": {
+            "description": "Payment gateway rejected the payment, timed out or is unreachable; the order is rolled back",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/flash-sales/campaign/create": {
+      "post": {
+        "tags": ["Flash Sale Controller"],
+        "summary": "Create a campaign",
+        "description": "Create a flash sale campaign with its items as a seller. A notification is scheduled at start_at.",
+        "operationId": "createCampaign",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/CreateCampaignRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Campaign created",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseCreateCampaignResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or end_at is not after start_at",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid or expired access token",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated user is not a seller",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "404": {
+            "description": "Thumbnail not found or not owned by the seller",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/files/item-images": {
+      "post": {
+        "tags": ["File Controller"],
+        "summary": "Upload a campaign item thumbnail",
+        "description": "Upload a JPEG or PNG image as a seller",
+        "operationId": "uploadItemImage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseFileUploadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "tags": ["Authentication Controller"],
+        "summary": "Register a new user",
+        "description": "Register a new user with username and password",
+        "operationId": "register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "User registered",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ApiResponseString" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request, passwords do not match, or shop name missing for a seller",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "409": {
+            "description": "Username or email already exists",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "tags": ["Authentication Controller"],
+        "summary": "Refresh token",
+        "description": "Refresh access token using refresh token",
+        "operationId": "refreshToken",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RefreshTokenRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Token refreshed",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing refresh token",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid, expired, non-refresh or unknown refresh token",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Authentication Controller"],
+        "summary": "Login user",
+        "description": "Login with username and password",
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseLoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing username or password",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid username or password",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/flash-sales/campaign/{campaignId}/items": {
+      "get": {
+        "tags": ["Flash Sale Controller"],
+        "summary": "List campaign items",
+        "description": "List the items of a campaign. No authentication required.",
+        "operationId": "getItemsByCampaignId",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Items returned",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponseListGetCampaignItemResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Campaign not found",
+            "content": {
+              "*/*": {
+                "schema": { "$ref": "#/components/schemas/ErrorResponse" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateOrderRequest": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderItem" },
+            "minItems": 1
+          }
+        },
+        "required": ["items"]
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "campaign_item_id": { "type": "string", "minLength": 1 },
+          "quantity": { "type": "integer", "format": "int32", "minimum": 0 }
+        },
+        "required": ["campaign_item_id", "quantity"]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "message": { "type": "string" },
+          "path": { "type": "string" },
+          "timestamp": { "type": "string", "format": "date-time" },
+          "status_code": { "type": "integer", "format": "int32" }
+        }
+      },
+      "ApiResponseCreateOrderResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "data": { "$ref": "#/components/schemas/CreateOrderResponse" },
+          "status_code": { "type": "integer", "format": "int32" }
+        }
+      },
+      "CreateOrderResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "status": {
+            "type": "string",
+            "enum": ["PENDING", "PREPARED", "SHIPPED", "DELIVERED", "CANCELED"]
+          },
+          "total_amount": { "type": "number" },
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/OrderItem" }
+          }
+        }
+      },
+      "CreateCampaignItemRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "price": { "type": "number", "minimum": 0 },
+          "stock": { "type": "integer", "format": "int64", "minimum": 0 },
+          "thumbnail_id": { "type": "string" }
+        },
+        "required": ["name", "price", "stock"]
+      },
+      "CreateCampaignRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "description": { "type": "string" },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CreateCampaignItemRequest"
+            },
+            "minItems": 1
+          },
+          "start_at": { "type": "string", "format": "date-time" },
+          "end_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["end_at", "items", "name", "start_at"]
+      },
+      "ApiResponseCreateCampaignResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "data": { "$ref": "#/components/schemas/CreateCampaignResponse" },
+          "status_code": { "type": "integer", "format": "int32" }
+        }
+      },
+      "CreateCampaignResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "started_at": { "type": "string", "format": "date-time" },
+          "ended_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ApiResponseFileUploadResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "data": { "$ref": "#/components/schemas/FileUploadResponse" },
+          "status_code": { "type": "integer", "format": "int32" }
+        }
+      },
+      "FileUploadResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "object_key": { "type": "string" }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "format": "email", "minLength": 1 },
+          "username": { "type": "string", "maxLength": 50, "minLength": 0 },
+          "password": { "type": "string", "minLength": 1 },
+          "phone": { "type": "string", "pattern": "^\\d{9,15}$" },
+          "retype_password": { "type": "string", "minLength": 1 },
+          "shop_name": { "type": "string" },
+          "shipping_address": { "type": "string" },
+          "role": { "type": "string" }
+        },
+        "required": ["email", "password", "retype_password", "role", "username"]
+      },
+      "ApiResponseString": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "data": { "type": "string" },
+          "status_code": { "type": "integer", "format": "int32" }
+        }
+      },
+      "RefreshTokenRequest": {
+        "type": "object",
+        "properties": { "refresh_token": { "type": "string", "minLength": 1 } },
+        "required": ["refresh_token"]
+      },
+      "ApiResponseTokenResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "data": { "$ref": "#/components/schemas/TokenResponse" },
+          "status_code": { "type": "integer", "format": "int32" }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string" },
+          "refresh_token": { "type": "string" },
+          "token_type": { "type": "string" },
+          "expires_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "username": { "type": "string", "minLength": 1 },
+          "password": { "type": "string", "minLength": 1 }
+        },
+        "required": ["password", "username"]
+      },
+      "ApiResponseLoginResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "data": { "$ref": "#/components/schemas/LoginResponse" },
+          "status_code": { "type": "integer", "format": "int32" }
+        }
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string" },
+          "refresh_token": { "type": "string" },
+          "token_type": { "type": "string" },
+          "expires_at": { "type": "string", "format": "date-time" },
+          "username": { "type": "string" },
+          "role": { "type": "string", "enum": ["SELLER", "CUSTOMER"] }
+        }
+      },
+      "ApiResponseListGetCampaignItemResponse": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string" },
+          "data": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/GetCampaignItemResponse" }
+          },
+          "status_code": { "type": "integer", "format": "int32" }
+        }
+      },
+      "GetCampaignItemResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "price": { "type": "number" },
+          "stock": { "type": "integer", "format": "int64" },
+          "campaign_id": { "type": "string" },
+          "thumbnail_id": { "type": "string" }
+        }
+      }
+    }
+  }
+}

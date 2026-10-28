@@ -30,7 +30,7 @@ A small ecommerce backend built around **flash sale campaigns**: sellers create 
 | Operations | Swagger UI, OpenAPI JSON and an Actuator health endpoint. |
 ## Architecture
 
-![Architecture diagram](docs/architecture.jpg)
+![Architecture diagram](docs/architecture/architecture.jpg)
 
 The runtime consists of one Spring Boot process and three backing services:
 
@@ -50,7 +50,7 @@ Inside the monolith, requests flow through classic layers:
 5. **Cross-cutting** — `GlobalExceptionHandler` turns exceptions into a uniform `ErrorResponse`; JPA auditing fills `created_by` / `last_modified_by` from the security context; Bean Validation guards the request DTOs.
 ## Database
 
-![Database diagram](docs/database.png)
+![Database diagram](docs/database/database.png)
 
 Eight tables, all with UUID string primary keys and the audit columns `created_at`, `created_by`, `last_modified_at`, `last_modified_by` inherited from `BaseEntity`:
 
