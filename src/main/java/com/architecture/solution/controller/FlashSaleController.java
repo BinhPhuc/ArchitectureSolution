@@ -11,6 +11,7 @@ import com.architecture.solution.service.FlashSaleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,10 +27,12 @@ public class FlashSaleController implements FlashSaleApi {
 
     @Override
     @PostMapping("/campaign/create")
+    @PreAuthorize("hasRole('SELLER')")
     public ResponseEntity<ApiResponse<CreateCampaignResponse>> createCampaign(
             @Valid @RequestBody CreateCampaignRequest request
     ) {
-        return null;
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.created(flashSaleService.createCampaign(request), "Campaign created successfully"));
     }
 
     @Override
@@ -46,6 +49,9 @@ public class FlashSaleController implements FlashSaleApi {
     public ResponseEntity<ApiResponse<CreateOrderResponse>> createOrder(
             @Valid @RequestBody CreateOrderRequest createOrderRequest
     ) {
-        return ResponseEntity.ok(ApiResponse.success(flashSaleService.createOrder(createOrderRequest), "Order created successfully"));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.created(flashSaleService.createOrder(createOrderRequest), "Order created successfully"));
     }
+
+
 }

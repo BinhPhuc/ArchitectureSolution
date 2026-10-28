@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="architecture" name="Architecture">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="client" value="Client" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="420" y="40" width="40" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="app" value="Spring Boot" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#f9f9f9;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="160" y="150" width="560" height="440" as="geometry" />
+        </mxCell>
+        <mxCell id="filter" value="JwtAuthFilter" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="360" y="190" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="controller" value="Controller" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="360" y="270" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="service" value="Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="360" y="350" width="160" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="repository" value="Repository" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="190" y="470" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="s3" value="S3 Service" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="330" y="470" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="paymentclient" value="Payment Client" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="470" y="470" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="scheduler" value="Scheduler" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="610" y="470" width="90" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="notification" value="Notification (log)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="600" y="540" width="110" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="mysql" value="MySQL" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="210" y="640" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rustfs" value="RustFS (S3)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="350" y="640" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="paymock" value="Payment Mock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="470" y="660" width="120" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" value="HTTP + JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="client" target="filter">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="filter" target="controller">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="controller" target="service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="service" target="repository">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="service" target="s3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="service" target="paymentclient">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="service" target="scheduler">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="scheduler" target="notification">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" value="JDBC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="repository" target="mysql">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e10" value="S3 API" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="s3" target="rustfs">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="paymentclient" target="paymock">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="architecture-detailed" name="Architecture (detailed)">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="seller" value="Seller" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="150" width="40" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="customer" value="Customer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="60" y="400" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="app" value="Spring Boot (:8080)" style="rounded=1;whiteSpace=wrap;html=1;dashed=1;fillColor=#f9f9f9;strokeColor=#666666;verticalAlign=top;fontStyle=1;fontSize=13;align=left;spacingLeft=12;spacingTop=4;" vertex="1" parent="1">
+          <mxGeometry x="240" y="40" width="760" height="660" as="geometry" />
+        </mxCell>
+
+        <mxCell id="security" value="&lt;b&gt;Spring Security&lt;/b&gt;&lt;br&gt;JwtAuthFilter · role check (SELLER / CUSTOMER)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="280" y="80" width="680" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ctrl_auth" value="&lt;b&gt;AuthController&lt;/b&gt;&lt;br&gt;/api/v1/auth" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="280" y="170" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ctrl_file" value="&lt;b&gt;FileController&lt;/b&gt;&lt;br&gt;/api/v1/files" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="520" y="170" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="ctrl_flash" value="&lt;b&gt;FlashSaleController&lt;/b&gt;&lt;br&gt;/api/v1/flash-sales" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="760" y="170" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="svc_auth" value="&lt;b&gt;AuthService&lt;/b&gt;&lt;br&gt;register · login · refresh" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="280" y="270" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_file" value="&lt;b&gt;FileService&lt;/b&gt;&lt;br&gt;upload thumbnail" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="520" y="270" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="svc_flash" value="&lt;b&gt;FlashSaleService&lt;/b&gt;&lt;br&gt;campaign · items · order" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="760" y="270" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="scheduler" value="&lt;b&gt;Scheduler&lt;/b&gt;&lt;br&gt;in-memory, fires at start_at" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="760" y="370" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="notification" value="&lt;b&gt;Notification&lt;/b&gt;&lt;br&gt;email simulated by log" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="520" y="370" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="repo" value="&lt;b&gt;Repositories&lt;/b&gt;&lt;br&gt;Spring Data JPA" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="280" y="560" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="s3svc" value="&lt;b&gt;S3 Service&lt;/b&gt;&lt;br&gt;AWS SDK v2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="520" y="560" width="200" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="payclient" value="&lt;b&gt;Payment Client&lt;/b&gt;&lt;br&gt;WebClient" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="760" y="560" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="mysql" value="MySQL&lt;br&gt;ecommerce" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="330" y="750" width="100" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="rustfs" value="RustFS&lt;br&gt;item-images" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="570" y="750" width="100" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="paymock" value="Payment Mock&lt;br&gt;Express :3001" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" vertex="1" parent="1">
+          <mxGeometry x="790" y="765" width="140" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_seller" value="HTTP + JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="seller" target="security">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="170" y="180" /><mxPoint x="170" y="105" /></Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e_customer" value="HTTP + JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="customer" target="security">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points"><mxPoint x="200" y="430" /><mxPoint x="200" y="105" /></Array>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e_s1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="security" target="ctrl_auth"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_s2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="security" target="ctrl_file"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="security" target="ctrl_flash"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e_c1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="ctrl_auth" target="svc_auth"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_c2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="ctrl_file" target="svc_file"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_c3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="ctrl_flash" target="svc_flash"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e_auth_repo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="svc_auth" target="repo"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_file_s3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="svc_file" target="s3svc">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="500" y="345" /><mxPoint x="500" y="585" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e_file_repo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="svc_file" target="repo">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="560" y="345" /><mxPoint x="560" y="520" /><mxPoint x="420" y="520" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e_flash_repo" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="svc_flash" target="repo">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="740" y="295" /><mxPoint x="740" y="500" /><mxPoint x="440" y="500" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e_flash_pay" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="svc_flash" target="payclient">
+          <mxGeometry relative="1" as="geometry"><Array as="points"><mxPoint x="980" y="295" /><mxPoint x="980" y="585" /></Array></mxGeometry>
+        </mxCell>
+        <mxCell id="e_flash_sched" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="svc_flash" target="scheduler"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_sched_notif" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" edge="1" parent="1" source="scheduler" target="notification"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e_repo_mysql" value="JDBC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="repo" target="mysql"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_s3_rustfs" value="S3 API" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="s3svc" target="rustfs"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_pay_mock" value="HTTP" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;fontSize=11;" edge="1" parent="1" source="payclient" target="paymock"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
