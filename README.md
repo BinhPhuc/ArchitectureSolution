@@ -11,7 +11,7 @@ A small ecommerce backend built around **flash sale campaigns**: sellers create 
 - [Getting started](#getting-started)
 - [API reference](#api-reference)
 - [Repository layout](#repository-layout)
-- [Build, test and deploy](#build-test-and-deploy)
+- [Build and deploy](#build-and-deploy)
 - [The nine intentional problems](#the-nine-intentional-problems)
 
 ## What it does
@@ -255,21 +255,20 @@ Error:
 └── .github/workflows/docker-publish.yml
 ```
 
-## Build, test and deploy
+## Build and deploy
 
-### Tests
+Run commands from the repository root.
 
-```bash
-./mvnw test
-```
+### JAR
 
-The suite is a single Spring context smoke test, so it needs the same configuration and running MySQL/RustFS as the application. The payment mock has an `npm test` script but no tests yet.
-
-### Jar
+Requires JDK 17. Before running, complete the service and environment setup in [Getting started](#getting-started).
 
 ```bash
 ./mvnw clean package -DskipTests
-java -jar target/solution-0.0.1-SNAPSHOT.jar      # same exported env as spring-boot:run
+set -a
+source deploy/env/.env
+set +a
+java -jar target/solution-0.0.1-SNAPSHOT.jar
 ```
 
 ### Docker image
@@ -278,21 +277,29 @@ java -jar target/solution-0.0.1-SNAPSHOT.jar      # same exported env as spring-
 docker build -t architecture-solution:local .
 ```
 
-Multi-stage build (`maven:3.9.9-eclipse-temurin-17` → `eclipse-temurin:17-jre-alpine`), runs as a non-root user with `-Xms256m -Xmx512m`.
+### Docker Compose
 
-### Docker Compose deployment
+Fill in `deploy/env/.env`. Use these URLs for containers:
+
+```dotenv
+SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/ecommerce
+RUSTFS_ENDPOINT=http://rustfs:9000
+```
+
+Run the payment mock separately and set `PAYMENT_GATEWAY_URL` to a URL reachable from the backend container (`localhost` refers to the container itself).
 
 ```bash
 bash deploy/script/deploy.sh
 ```
 
-Starts the infrastructure, waits for health checks, then runs `deploy/compose/compose-app.yaml`, which pulls `ghcr.io/binhphuc/architecturesolution:latest` (it does not build the local checkout). Both scripts use `deploy/env/.env`. When the backend runs in a container:
+Starts MySQL and RustFS, waits for health checks, then pulls and runs `ghcr.io/binhphuc/architecturesolution:latest`. The local Docker image is not used.
 
-- use `jdbc:mysql://mysql:3306/ecommerce` and `http://rustfs:9000` (containers share the `architecture_solution` network);
-- point `PAYMENT_GATEWAY_URL` at an address reachable from the container (`localhost:3001` would be the container itself; the mock is not part of the Compose files);
-- fill in all required variables from `.env.example`, including `JWT_SECRET_KEY`; Compose passes them into the container and `application.yaml` resolves its placeholders.
+Check: http://localhost:8080/actuator/health
 
-GitHub Actions (`.github/workflows/docker-publish.yml`) builds the image on every push to `main`, pushes it to GHCR and signs it with cosign. Manual runs can opt in to pushing. The workflow does not deploy the application and does not need application secrets; configuration is supplied when the container runs.
+### CI
+
+Push to `main` → build, publish and sign the image in GHCR. Manual runs publish only when `push_image` is enabled. Run `deploy.sh` on the deployment machine to deploy.
+
 ## The nine intentional problems
 
 | # | Problem | Where it lives today | What goes wrong |
